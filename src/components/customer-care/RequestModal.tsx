@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
-import {
-  CATEGORIES,
-  DEFAULT_CATEGORY,
-  generateReference,
-  saveRequest,
-  type SupportRequest,
-} from "./requests";
+import { useServerFn } from "@tanstack/react-start";
+import { CATEGORIES, DEFAULT_CATEGORY } from "./requests";
+import { submitClaim } from "@/lib/claims.functions";
 
 type Phase = "form" | "submitting" | "success";
 
@@ -27,6 +23,9 @@ export function RequestModal({
   const [category, setCategory] = useState(initialCategory ?? DEFAULT_CATEGORY);
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const submit = useServerFn(submitClaim);
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
@@ -38,6 +37,8 @@ export function RequestModal({
     setCategory(initialCategory ?? DEFAULT_CATEGORY);
     setOrderNumber("");
     setEmail("");
+    setName("");
+    setPhone("");
     setDescription(initialQuery ? `Regarding: ${initialQuery}` : "");
 
     const onKey = (e: KeyboardEvent) => {
@@ -53,10 +54,13 @@ export function RequestModal({
 
   if (!open) return null;
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (phase === "submitting") return;
-
+    if (name.trim().length < 2) {
+      setError("Please enter your full name.");
+      return;
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("Please enter a valid email address.");
       return;
@@ -65,25 +69,18 @@ export function RequestModal({
       setError("Please describe your issue in a little more detail.");
       return;
     }
-
     setError("");
     setPhase("submitting");
-
-    const ref = generateReference();
-    const request: SupportRequest = {
-      ref,
-      email: email.trim(),
-      category,
-      orderNumber: orderNumber.trim(),
-      description: description.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
-    window.setTimeout(() => {
-      saveRequest(request);
-      setReference(ref);
+    try {
+      const res = await submit({
+        data: { name, email, phone, category, orderNumber, description },
+      });
+      setReference(res.ref);
       setPhase("success");
-    }, 1400);
+    } catch {
+      setError("We couldn't send your request. Please try again.");
+      setPhase("form");
+    }
   }
 
   const fieldClasses =
@@ -192,6 +189,37 @@ export function RequestModal({
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
                 placeholder="e.g. 1002345678"
+                className={fieldClasses}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <label htmlFor="req-name" className="text-sm font-medium">
+                Full name
+              </label>
+              <input
+                id="req-name"
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className={fieldClasses}
+              />
+            </div>
+
+            <div className="grid gap-1.5">
+              <label htmlFor="req-phone" className="text-sm font-medium">
+                Phone number{" "}
+                <span className="font-normal text-muted-foreground">(optional)</span>
+              </label>
+              <input
+                id="req-phone"
+                type="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+44 7700 900000"
                 className={fieldClasses}
               />
             </div>
