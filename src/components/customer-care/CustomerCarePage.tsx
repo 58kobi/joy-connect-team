@@ -5,6 +5,7 @@ import { Categories } from "./Categories";
 import { TrackSection } from "./TrackSection";
 import { FinalCta, Process, WhyUs } from "./Sections";
 import { SupportFaq } from "./SupportFaq";
+import { CustomerStories } from "./CustomerStories";
 import { Footer } from "./Footer";
 import { RequestModal } from "./RequestModal";
 
@@ -33,6 +34,10 @@ export function CustomerCarePage() {
       <TrackSection />
       <Process />
       <WhyUs />
+      <CustomerStories
+        onShare={() => openRequest("Complaints")}
+        onSupport={() => openRequest()}
+      />
       <SupportFaq onContact={(category) => openRequest(category)} />
       <FinalCta onContact={() => openRequest()} />
       <Footer />
