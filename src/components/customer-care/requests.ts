@@ -63,6 +63,7 @@ export const CATEGORY_DATA: Category[] = [
 ];
 
 export const CATEGORIES = CATEGORY_DATA.map((c) => c.title);
+export const DEFAULT_CATEGORY = "Track Your Order";
 
 const STORAGE_KEY = "debenhams-cc-requests";
 const REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";

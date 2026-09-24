@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 import {
   CATEGORIES,
+  DEFAULT_CATEGORY,
   generateReference,
   saveRequest,
   type SupportRequest,
@@ -17,13 +18,13 @@ export function RequestModal({
   onTracked,
 }: {
   open: boolean;
-  initialCategory?: string;
-  initialQuery?: string;
+  initialCategory?: string | undefined;
+  initialQuery?: string | undefined;
   onClose: () => void;
   onTracked: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("form");
-  const [category, setCategory] = useState(initialCategory ?? CATEGORIES[0]);
+  const [category, setCategory] = useState(initialCategory ?? DEFAULT_CATEGORY);
   const [orderNumber, setOrderNumber] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
@@ -34,7 +35,7 @@ export function RequestModal({
     if (!open) return;
     setPhase("form");
     setError("");
-    setCategory(initialCategory ?? CATEGORIES[0]);
+    setCategory(initialCategory ?? DEFAULT_CATEGORY);
     setOrderNumber("");
     setEmail("");
     setDescription(initialQuery ? `Regarding: ${initialQuery}` : "");
