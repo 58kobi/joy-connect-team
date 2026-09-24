@@ -14,16 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      claim_tracking: {
+        Row: {
+          reply: string | null
+          status: Database["public"]["Enums"]["claim_status"]
+          status_updated_at: string
+          token: string
+        }
+        Insert: {
+          reply?: string | null
+          status: Database["public"]["Enums"]["claim_status"]
+          status_updated_at: string
+          token: string
+        }
+        Update: {
+          reply?: string | null
+          status?: Database["public"]["Enums"]["claim_status"]
+          status_updated_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      claims: {
+        Row: {
+          category: string
+          created_at: string
+          customer_name: string
+          description: string
+          email: string
+          id: string
+          internal_note: string | null
+          order_number: string | null
+          phone: string | null
+          ref: string
+          reply: string | null
+          seen: boolean
+          status: Database["public"]["Enums"]["claim_status"]
+          status_updated_at: string
+          tracking_token: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          customer_name: string
+          description: string
+          email: string
+          id?: string
+          internal_note?: string | null
+          order_number?: string | null
+          phone?: string | null
+          ref: string
+          reply?: string | null
+          seen?: boolean
+          status?: Database["public"]["Enums"]["claim_status"]
+          status_updated_at?: string
+          tracking_token?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          customer_name?: string
+          description?: string
+          email?: string
+          id?: string
+          internal_note?: string | null
+          order_number?: string | null
+          phone?: string | null
+          ref?: string
+          reply?: string | null
+          seen?: boolean
+          status?: Database["public"]["Enums"]["claim_status"]
+          status_updated_at?: string
+          tracking_token?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "staff"
+      claim_status:
+        | "received"
+        | "under_review"
+        | "being_handled"
+        | "update_available"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +253,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "staff"],
+      claim_status: [
+        "received",
+        "under_review",
+        "being_handled",
+        "update_available",
+      ],
+    },
   },
 } as const
