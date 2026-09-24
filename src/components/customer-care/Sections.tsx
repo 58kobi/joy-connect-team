@@ -138,13 +138,19 @@ export function FinalCta({ onContact }: { onContact: () => void }) {
           onClick={onContact}
           className="w-full max-w-xs rounded-full bg-surface px-8 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-card sm:w-auto"
         >
-          Contact Us →
+          <span className="inline-flex items-center justify-center gap-2">
+            Contact Us
+            <ArrowRight size={16} aria-hidden />
+          </span>
         </button>
         <a
           href="#track"
           className="w-full max-w-xs rounded-full border border-primary-foreground/40 px-8 py-3.5 text-sm font-medium transition-colors hover:bg-primary-foreground/10 sm:w-auto"
         >
-          Track My Request →
+          <span className="inline-flex items-center justify-center gap-2">
+            Track My Request
+            <ArrowRight size={16} aria-hidden />
+          </span>
         </a>
       </div>
     </section>
