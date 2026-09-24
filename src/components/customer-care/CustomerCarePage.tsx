@@ -30,11 +30,11 @@ export function CustomerCarePage() {
     <main className="min-h-screen bg-background font-sans text-foreground antialiased">
       <Navigation />
       <Hero onGetHelp={(query) => openRequest(undefined, query)} />
-      <Categories onRequest={(category) => openRequest(category)} />
-      <TrackSection />
-      <Process />
       <WhyUs />
       <TrustpilotReviews />
+      <Process />
+      <Categories onRequest={(category) => openRequest(category)} />
+      <TrackSection />
       <SupportFaq onContact={(category) => openRequest(category)} />
       <FinalCta onContact={() => openRequest()} />
       <Footer />
