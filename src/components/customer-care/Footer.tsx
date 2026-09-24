@@ -1,0 +1,88 @@
+import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+
+const NAV_LINKS = [
+  { label: "Home", href: "#home" },
+  { label: "Track My Request", href: "#track" },
+  { label: "FAQs", href: "#faqs" },
+  { label: "Contact Us", href: "#contact" },
+];
+
+const LEGAL_LINKS = ["Privacy Policy", "Terms & Conditions", "Cookies"];
+
+const SOCIALS = [
+  { icon: Facebook, label: "Facebook" },
+  { icon: Instagram, label: "Instagram" },
+  { icon: Twitter, label: "Twitter" },
+  { icon: Youtube, label: "YouTube" },
+];
+
+export function Footer() {
+  return (
+    <footer className="bg-primary px-5 py-14 text-primary-foreground sm:px-6 lg:px-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_auto]">
+          <div>
+            <p className="font-serif text-3xl tracking-tight">Debenhams</p>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/55">
+              Customer care support for orders, delivery, returns, refunds and
+              enquiries.
+            </p>
+          </div>
+
+          <nav aria-label="Footer">
+            <h3 className="text-sm font-medium">Customer Care</h3>
+            <div className="mt-5 grid gap-3 text-sm text-primary-foreground/60">
+              {NAV_LINKS.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </nav>
+
+          <div>
+            <h3 className="text-sm font-medium">Legal</h3>
+            <div className="mt-5 grid gap-3 text-sm text-primary-foreground/60">
+              {LEGAL_LINKS.map((label) => (
+                <a
+                  key={label}
+                  href="#"
+                  className="transition-colors hover:text-primary-foreground"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-4 md:justify-end">
+            {SOCIALS.map(({ icon: Icon, label }) => (
+              <a
+                key={label}
+                href="#"
+                aria-label={label}
+                className="text-primary-foreground/50 transition-colors hover:text-primary-foreground"
+              >
+                <Icon size={18} strokeWidth={1.6} />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-12 border-t border-primary-foreground/10 pt-7">
+          <p className="text-xs text-primary-foreground/40">
+            © 2026 Debenhams Customer Care. All rights reserved.
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-primary-foreground/35">
+            Independent customer support service. Not operated by or affiliated
+            with Debenhams unless otherwise stated.
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
