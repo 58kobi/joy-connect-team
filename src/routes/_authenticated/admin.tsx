@@ -21,7 +21,6 @@ import {
   Package,
   Phone,
   RefreshCw,
-  Search,
   Settings,
   Users,
   X,
@@ -94,7 +93,6 @@ function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | ClaimStatus>("all");
   const [order, setOrder] = useState<"newest" | "oldest" | "updated">("newest");
   const [now, setNow] = useState(() => Date.now());
@@ -196,16 +194,14 @@ function AdminPage() {
   };
 
   const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
     return claims
       .filter((c) => statusFilter === "all" || c.status === statusFilter)
-      .filter((c) => !s || [c.customer_name, c.email, c.ref, c.phone ?? "", c.description].some((v) => v.toLowerCase().includes(s)))
       .sort((a, b) => {
         if (order === "oldest") return a.created_at.localeCompare(b.created_at);
         if (order === "updated") return b.status_updated_at.localeCompare(a.status_updated_at);
         return b.created_at.localeCompare(a.created_at);
       });
-  }, [claims, q, statusFilter, order]);
+  }, [claims, statusFilter, order]);
 
   const newCount = claims.filter((c) => !c.seen).length;
   const selected = claims.find((c) => c.id === openId) ?? null;
@@ -334,17 +330,7 @@ function AdminPage() {
           <button onClick={() => setNavOpen(true)} aria-label="Open menu" className="rounded-lg p-2 hover:bg-console-bg lg:hidden">
             <Menu size={18} />
           </button>
-          <div className="relative ml-auto w-full max-w-md">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search by name, email, phone, order, or claim ID..."
-              aria-label="Search claims"
-              className="w-full rounded-lg border border-console-line bg-console-bg py-2 pl-9 pr-3 text-sm outline-none focus:border-console-accent focus:ring-2 focus:ring-console-accent/20"
-            />
-          </div>
-          <button onClick={() => scrollTo("notifications")} aria-label="Notifications" className="relative shrink-0 rounded-full p-2 hover:bg-console-bg">
+          <button onClick={() => scrollTo("notifications")} aria-label="Notifications" className="relative ml-auto shrink-0 rounded-full p-2 hover:bg-console-bg">
             <Bell size={18} />
             {notifications.length > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-console-red" />}
           </button>
