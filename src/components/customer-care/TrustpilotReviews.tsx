@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Star,
   BadgeCheck,
@@ -10,14 +12,39 @@ import {
 } from "lucide-react";
 
 type Reply = {
-  id: number;
+  id: string;
   name: string;
   text: string;
   createdAt: number;
   likes: number;
   liked: boolean;
-  parentId: number | null;
+  parentId: string | null;
 };
+
+type ReplyRow = {
+  id: string;
+  name: string;
+  body: string;
+  likes: number;
+  created_at: string;
+  parent_id: string | null;
+};
+
+const LIKED_KEY = "review-reply-likes";
+function readLiked(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(LIKED_KEY) ?? "[]") as string[]);
+  } catch {
+    return new Set();
+  }
+}
+function writeLiked(set: Set<string>) {
+  try {
+    localStorage.setItem(LIKED_KEY, JSON.stringify([...set]));
+  } catch {
+    /* ignore */
+  }
+}
 
 function relativeTime(ts: number, now: number) {
   const s = Math.max(0, Math.floor((now - ts) / 1000));
@@ -347,6 +374,51 @@ function ReviewCard({
   const [showThread, setShowThread] = useState(true);
   const [replies, setReplies] = useState<Reply[]>([]);
   const now = Date.now();
+  const reviewKey = review.name;
+
+  useEffect(() => {
+    let active = true;
+    const likedSet = readLiked();
+    const toReply = (r: ReplyRow): Reply => ({
+      id: r.id,
+      name: r.name,
+      text: r.body,
+      createdAt: new Date(r.created_at).getTime(),
+      likes: r.likes,
+      liked: likedSet.has(r.id),
+      parentId: r.parent_id,
+    });
+    supabase
+      .from("review_replies")
+      .select("id,name,body,likes,created_at,parent_id")
+      .eq("review_key", reviewKey)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (active && data) setReplies(data.map(toReply));
+      });
+    const channel = supabase
+      .channel(`review-replies-${reviewKey}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "review_replies", filter: `review_key=eq.${reviewKey}` },
+        (payload) => {
+          const row = payload.new as ReplyRow | undefined;
+          if (!row?.id) return;
+          setReplies((cur) => {
+            const i = cur.findIndex((r) => r.id === row.id);
+            if (i === -1) return [...cur, toReply(row)];
+            const next = [...cur];
+            next[i] = { ...next[i]!, likes: row.likes };
+            return next;
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, [reviewKey]);
 
   function handleLike() {
     setLiked((current) => !current);
@@ -356,20 +428,39 @@ function ReviewCard({
     );
   }
 
-  function addReply(parentId: number | null, name: string, text: string) {
-    setReplies((current) => [
-      ...current,
-      { id: Date.now() + Math.random(), name, text, createdAt: Date.now(), likes: 0, liked: false, parentId },
-    ]);
+  async function addReply(parentId: string | null, name: string, text: string) {
+    const { data, error } = await supabase
+      .from("review_replies")
+      .insert({ review_key: reviewKey, parent_id: parentId, name, body: text })
+      .select("id,name,body,likes,created_at,parent_id")
+      .single();
+    if (error || !data) {
+      toast.error("Couldn't post your reply. Please try again.");
+      return;
+    }
+    setReplies((cur) =>
+      cur.some((r) => r.id === data.id)
+        ? cur
+        : [...cur, { id: data.id, name: data.name, text: data.body, createdAt: new Date(data.created_at).getTime(), likes: data.likes, liked: false, parentId: data.parent_id }]
+    );
     setShowThread(true);
   }
 
-  function likeReply(id: number) {
-    setReplies((current) =>
-      current.map((r) =>
-        r.id === id ? { ...r, liked: !r.liked, likes: r.liked ? Math.max(0, r.likes - 1) : r.likes + 1 } : r
-      )
+  async function likeReply(id: string) {
+    const target = replies.find((r) => r.id === id);
+    if (!target) return;
+    const delta = target.liked ? -1 : 1;
+    setReplies((cur) =>
+      cur.map((r) => (r.id === id ? { ...r, liked: !r.liked, likes: Math.max(0, r.likes + delta) } : r))
     );
+    const set = readLiked();
+    if (delta === 1) set.add(id);
+    else set.delete(id);
+    writeLiked(set);
+    const { data, error } = await supabase.rpc("like_review_reply", { _id: id, _delta: delta });
+    if (!error && typeof data === "number") {
+      setReplies((cur) => cur.map((r) => (r.id === id ? { ...r, likes: data } : r)));
+    }
   }
 
   const topLevel = replies.filter((r) => r.parentId === null);
