@@ -722,7 +722,7 @@ function LeaveAReview({
 
         <button
           type="submit"
-          disabled={!name.trim() || !text.trim()}
+          disabled={sending || !name.trim() || !text.trim()}
           className="w-full rounded-lg bg-yellow-400 px-4 py-3 text-sm font-semibold text-foreground transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Submit Review
@@ -796,7 +796,7 @@ export function TrustpilotReviews() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {reviews.map((review, index) => (
             <ReviewCard
-              key={`${review.name}-${index}`}
+              key={review.dbId ?? `${review.name}-${index}`}
               review={review}
               reviewIndex={index}
             />
