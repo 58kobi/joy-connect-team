@@ -202,7 +202,7 @@ export function CareChat() {
           aria-label="Care Assistant"
           className="animate-soft-enter fixed inset-0 z-50 flex flex-col bg-background"
         >
-          <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
+          <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground shadow-md sm:px-6">
             <Avatar human={isHuman} inverted />
             <div className="min-w-0 flex-1">
               <p className="font-serif text-base leading-tight">Care Assistant</p>
@@ -246,7 +246,8 @@ export function CareChat() {
             </div>
           ) : (
             <>
-              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
+                <div className="mx-auto w-full max-w-2xl space-y-3">
                 {state.messages.map((m) => (
                   <Bubble key={m.id} m={m} />
                 ))}
