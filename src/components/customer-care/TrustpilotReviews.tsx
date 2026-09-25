@@ -5,12 +5,184 @@ import {
   ThumbsUp,
   MessageCircle,
   Send,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 type Reply = {
   id: number;
+  name: string;
   text: string;
+  createdAt: number;
+  likes: number;
+  liked: boolean;
+  parentId: number | null;
 };
+
+function relativeTime(ts: number, now: number) {
+  const s = Math.max(0, Math.floor((now - ts) / 1000));
+  if (s < 45) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${Math.max(1, m)}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+function ReplyComposer({
+  label,
+  onSubmit,
+  onCancel,
+}: {
+  label: string;
+  onSubmit: (name: string, text: string) => void;
+  onCancel?: (() => void) | undefined;
+}) {
+  const [name, setName] = useState("");
+  const [text, setText] = useState("");
+  function submit() {
+    const t = text.trim().slice(0, 500);
+    if (!t) return;
+    onSubmit(name.trim().slice(0, 60) || "Guest", t);
+    setText("");
+  }
+  return (
+    <div className="mt-3 space-y-2">
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Your name (optional)"
+        maxLength={60}
+        aria-label="Your name"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
+      />
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submit();
+          }}
+          placeholder="Write a reply..."
+          maxLength={500}
+          aria-label={label}
+          className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
+        />
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!text.trim()}
+          aria-label="Post reply"
+          className="inline-flex shrink-0 items-center justify-center rounded-lg bg-yellow-400 px-3 text-foreground transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Send size={14} />
+        </button>
+      </div>
+      {onCancel && (
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-[11px] text-muted-foreground hover:text-foreground"
+        >
+          Cancel
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ReplyItem({
+  reply,
+  all,
+  depth,
+  now,
+  onLike,
+  onReply,
+}: {
+  reply: Reply;
+  all: Reply[];
+  depth: number;
+  now: number;
+  onLike: (id: number) => void;
+  onReply: (parentId: number, name: string, text: string) => void;
+}) {
+  const [replying, setReplying] = useState(false);
+  const children = all.filter((r) => r.parentId === reply.id);
+  return (
+    <div className="mt-3">
+      <div className="flex gap-2">
+        <span
+          aria-hidden="true"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-cream text-[10px] font-medium text-foreground ring-1 ring-border"
+        >
+          {initials(reply.name)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="rounded-lg bg-muted/50 px-3 py-2">
+            <div className="flex items-baseline gap-2">
+              <span className="truncate text-xs font-medium">{reply.name}</span>
+              <span className="text-[10px] text-muted-foreground">
+                {relativeTime(reply.createdAt, now)}
+              </span>
+            </div>
+            <p className="mt-0.5 break-words text-xs leading-relaxed text-foreground/80">
+              {reply.text}
+            </p>
+          </div>
+          <div className="mt-1 flex items-center gap-3 px-1">
+            <button
+              type="button"
+              onClick={() => onLike(reply.id)}
+              aria-pressed={reply.liked}
+              className={`inline-flex items-center gap-1 text-[11px] font-medium transition-colors ${
+                reply.liked ? "text-yellow-600" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <ThumbsUp size={12} className={reply.liked ? "fill-yellow-400" : ""} />
+              {reply.likes > 0 ? reply.likes : "Like"}
+            </button>
+            {depth < 3 && (
+              <button
+                type="button"
+                onClick={() => setReplying((v) => !v)}
+                className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              >
+                Reply{children.length > 0 ? ` (${children.length})` : ""}
+              </button>
+            )}
+          </div>
+          {replying && (
+            <ReplyComposer
+              label={`Reply to ${reply.name}`}
+              onCancel={() => setReplying(false)}
+              onSubmit={(name, text) => {
+                onReply(reply.id, name, text);
+                setReplying(false);
+              }}
+            />
+          )}
+          {children.length > 0 && (
+            <div className="ml-1 border-l-2 border-border pl-3">
+              {children.map((c) => (
+                <ReplyItem
+                  key={c.id}
+                  reply={c}
+                  all={all}
+                  depth={depth + 1}
+                  now={now}
+                  onLike={onLike}
+                  onReply={onReply}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type Review = {
   name: string;
@@ -172,8 +344,9 @@ function ReviewCard({
     review.likes ?? 8 + reviewIndex
   );
   const [showReply, setShowReply] = useState(false);
-  const [replyText, setReplyText] = useState("");
+  const [showThread, setShowThread] = useState(true);
   const [replies, setReplies] = useState<Reply[]>([]);
+  const now = Date.now();
 
   function handleLike() {
     setLiked((current) => !current);
@@ -183,21 +356,23 @@ function ReviewCard({
     );
   }
 
-  function handleReply() {
-    const text = replyText.trim();
-
-    if (!text) return;
-
+  function addReply(parentId: number | null, name: string, text: string) {
     setReplies((current) => [
       ...current,
-      {
-        id: Date.now(),
-        text,
-      },
+      { id: Date.now() + Math.random(), name, text, createdAt: Date.now(), likes: 0, liked: false, parentId },
     ]);
-
-    setReplyText("");
+    setShowThread(true);
   }
+
+  function likeReply(id: number) {
+    setReplies((current) =>
+      current.map((r) =>
+        r.id === id ? { ...r, liked: !r.liked, likes: r.liked ? Math.max(0, r.likes - 1) : r.likes + 1 } : r
+      )
+    );
+  }
+
+  const topLevel = replies.filter((r) => r.parentId === null);
 
   return (
     <article className="flex h-full flex-col rounded-xl border border-border bg-surface p-5">
@@ -272,44 +447,39 @@ function ReviewCard({
         </button>
       </div>
 
-      {replies.length > 0 && (
-        <div className="mt-3 space-y-2 border-l-2 border-border pl-3">
-          {replies.map((reply) => (
-            <div
-              key={reply.id}
-              className="rounded-lg bg-muted/50 px-3 py-2 text-xs leading-relaxed text-foreground/80"
-            >
-              {reply.text}
-            </div>
-          ))}
-        </div>
+      {showReply && (
+        <ReplyComposer
+          label={`Reply to ${review.name}`}
+          onSubmit={(name, text) => addReply(null, name, text)}
+        />
       )}
 
-      {showReply && (
-        <div className="mt-3 flex gap-2">
-          <input
-            type="text"
-            value={replyText}
-            onChange={(event) => setReplyText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                handleReply();
-              }
-            }}
-            placeholder="Write a reply..."
-            aria-label={`Reply to ${review.name}`}
-            className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-xs outline-none transition focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
-          />
-
+      {replies.length > 0 && (
+        <div className="mt-3">
           <button
             type="button"
-            onClick={handleReply}
-            disabled={!replyText.trim()}
-            aria-label="Post reply"
-            className="inline-flex shrink-0 items-center justify-center rounded-lg bg-yellow-400 px-3 text-foreground transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setShowThread((v) => !v)}
+            aria-expanded={showThread}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
           >
-            <Send size={14} />
+            {showThread ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            {showThread ? "Hide discussion" : `Show discussion (${replies.length})`}
           </button>
+          {showThread && (
+            <div className="animate-soft-enter">
+              {topLevel.map((r) => (
+                <ReplyItem
+                  key={r.id}
+                  reply={r}
+                  all={replies}
+                  depth={0}
+                  now={now}
+                  onLike={likeReply}
+                  onReply={addReply}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </article>
