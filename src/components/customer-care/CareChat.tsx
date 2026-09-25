@@ -247,7 +247,7 @@ export function CareChat() {
               <QuickActions onPick={quick} disabled={busy} />
               {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
               <p className="mt-auto pt-6 text-[11px] leading-relaxed text-muted-foreground">
-                Independent customer support service. Never share passwords, card numbers or security codes in chat.
+                Independent customer support service
               </p>
               </div>
             </div>
