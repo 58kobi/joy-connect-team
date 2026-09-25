@@ -25,39 +25,30 @@ export function TrackSection() {
   const [now, setNow] = useState(() => Date.now());
   const track = useServerFn(trackClaim);
 
-  // Live updates: realtime subscription + lightweight polling fallback.
-  const token = result?.token;
+  // Live updates: re-check the request through the secure server lookup.
+  const foundRef = result?.ref;
   useEffect(() => {
-    if (!token) return;
-    const apply = (row: { status: ClaimStatus; status_updated_at: string; reply: string | null }) =>
-      setResult((r) =>
-        r && (r.statusUpdatedAt !== row.status_updated_at || r.status !== row.status)
-          ? { ...r, status: row.status, statusUpdatedAt: row.status_updated_at, reply: row.reply }
-          : r,
-      );
-    const channel = supabase
-      .channel(`track-${token}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "claim_tracking", filter: `token=eq.${token}` },
-        (payload) => apply(payload.new as never),
-      )
-      .subscribe();
+    if (!foundRef) return;
     const poll = window.setInterval(async () => {
-      const { data } = await supabase
-        .from("claim_tracking")
-        .select("status, status_updated_at, reply")
-        .eq("token", token)
-        .maybeSingle();
-      if (data) apply(data as never);
+      try {
+        const fresh = (await track({ data: { ref: foundRef, email } })) as Result | null;
+        if (!fresh) return;
+        setResult((r) =>
+          r && (r.statusUpdatedAt !== fresh.statusUpdatedAt || r.status !== fresh.status || r.reply !== fresh.reply)
+            ? { ...r, status: fresh.status, statusUpdatedAt: fresh.statusUpdatedAt, reply: fresh.reply }
+            : r,
+        );
+      } catch {
+        /* ignore transient errors */
+      }
     }, 15000);
     const tick = window.setInterval(() => setNow(Date.now()), 20000);
     return () => {
-      supabase.removeChannel(channel);
       window.clearInterval(poll);
       window.clearInterval(tick);
     };
-  }, [token]);
+  }, [foundRef, email, track]);
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
