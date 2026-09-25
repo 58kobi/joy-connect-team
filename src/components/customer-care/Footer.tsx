@@ -1,5 +1,5 @@
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
-import logoAsset from "@/assets/debenhams-logo.png.asset.json";
+import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },

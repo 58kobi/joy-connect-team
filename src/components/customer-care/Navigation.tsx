@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
-import logoAsset from "@/assets/debenhams-logo.png.asset.json";
+import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
 
 const LINKS = [
   { label: "Home", href: "#home" },
