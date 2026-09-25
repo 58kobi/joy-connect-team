@@ -98,7 +98,7 @@ export function CareChat() {
   // Remembered across reloads so already-read messages never re-trigger the badge.
   useEffect(() => {
     const msgs = state?.messages ?? [];
-    const incoming = msgs.filter((m) => m.sender !== "customer");
+    const incoming = msgs.filter((m) => m.sender === "ai" || m.sender === "staff");
     const readKey = `${KEY}:read`;
     if (open) {
       const last = incoming[incoming.length - 1];
