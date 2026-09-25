@@ -24,7 +24,7 @@ export function Categories({
               key={item.title}
               type="button"
               onClick={() => onRequest(item.title)}
-              className="group flex min-h-[205px] flex-col rounded-lg border border-border bg-card p-5 text-left transition-colors hover:bg-surface"
+              className="group flex min-h-[205px] flex-col rounded-lg border border-border bg-card p-5 text-left transition-[background-color,border-color,transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-foreground/20 hover:bg-surface hover:shadow-md"
             >
               <Icon size={28} strokeWidth={1.4} />
               <h3 className="mt-6 text-sm font-medium">{item.title}</h3>

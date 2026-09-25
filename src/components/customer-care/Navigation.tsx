@@ -60,7 +60,7 @@ export function Navigation() {
 
       {open && (
         <nav
-          className="border-t border-primary-foreground/10 bg-primary md:hidden"
+          className="animate-soft-enter border-t border-primary-foreground/10 bg-primary md:hidden"
           aria-label="Mobile"
         >
           <div className="mx-auto flex max-w-7xl flex-col px-5 py-3">

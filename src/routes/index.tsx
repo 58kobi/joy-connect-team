@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Get help with your orders, delivery, returns, refunds, complaints and more. Submit a support request or track an existing one.",
+          "Get help with your orders, delivery, returns, refunds, complaints and more. Submit a customer support request online.",
       },
       { property: "og:title", content: "Debenhams Customer Care" },
       {

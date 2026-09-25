@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Loader2, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { CATEGORIES, DEFAULT_CATEGORY } from "./requests";
@@ -27,6 +27,7 @@ export function RequestModal({
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
   const [reference, setReference] = useState("");
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -44,6 +45,7 @@ export function RequestModal({
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
+    window.requestAnimationFrame(() => closeRef.current?.focus());
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
@@ -86,7 +88,7 @@ export function RequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-coffee/70 sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-coffee/70 backdrop-blur-[2px] sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Submit a support request"
@@ -94,7 +96,7 @@ export function RequestModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl bg-surface p-6 sm:rounded-2xl sm:p-8">
+      <div className="animate-panel-up max-h-[92vh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-2xl bg-surface p-6 shadow-2xl sm:rounded-2xl sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs tracking-[0.22em] text-muted-foreground">
@@ -105,6 +107,7 @@ export function RequestModal({
             </h2>
           </div>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             aria-label="Close"

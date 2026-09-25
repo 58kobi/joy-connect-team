@@ -43,6 +43,7 @@ export function CareChat() {
   const [unread, setUnread] = useState(0);
   const [staffOnline, setStaffOnline] = useState(false);
   const seenCount = useRef(0);
+  const previousVisibleCount = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -101,7 +102,9 @@ export function CareChat() {
   }, [visibleCount, open]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+    const hasNewMessage = visibleCount > previousVisibleCount.current;
+    endRef.current?.scrollIntoView({ block: "end", behavior: hasNewMessage ? "smooth" : "auto" });
+    previousVisibleCount.current = visibleCount;
   }, [visibleCount, pending, busy, open]);
 
   useEffect(() => {
@@ -189,7 +192,7 @@ export function CareChat() {
         <div
           role="dialog"
           aria-label="Care Assistant"
-          className="fixed inset-x-0 bottom-0 z-50 flex max-h-[55vh] flex-col rounded-t-2xl border border-border bg-background shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[50vh] sm:max-h-[50vh] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl"
+          className="animate-panel-up fixed inset-x-0 bottom-0 z-50 flex max-h-[55vh] flex-col rounded-t-2xl border border-border bg-background shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[50vh] sm:max-h-[50vh] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl"
         >
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
             <Avatar human={isHuman} inverted />

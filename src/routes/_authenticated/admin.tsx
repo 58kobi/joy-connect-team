@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, LogOut, Mail, Phone, Search, X } from "lucide-react";
+import { AlertCircle, Loader2, LogOut, Mail, Phone, Search, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAdmin, updateClaim, type ClaimStatus } from "@/lib/claims.functions";
@@ -44,13 +45,17 @@ const COLS =
 
 function AdminPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const checkAdmin = useServerFn(ensureAdmin);
   const update = useServerFn(updateClaim);
   const [access, setAccess] = useState<"checking" | "yes" | "no">("checking");
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ClaimStatus>("all");
+  const [order, setOrder] = useState<"newest" | "oldest" | "updated">("newest");
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -64,8 +69,14 @@ function AdminPage() {
       .select(COLS)
       .order("created_at", { ascending: false })
       .limit(500)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError(true);
+          setLoading(false);
+          return;
+        }
         setClaims((data as Claim[]) ?? []);
+        setLoadError(false);
         setLoading(false);
       });
     const channel = supabase
@@ -115,11 +126,15 @@ function AdminPage() {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return claims;
-    return claims.filter((c) =>
-      [c.customer_name, c.email, c.ref, c.phone ?? "", c.description].some((v) => v.toLowerCase().includes(s)),
-    );
-  }, [claims, q]);
+    return claims
+      .filter((c) => statusFilter === "all" || c.status === statusFilter)
+      .filter((c) => !s || [c.customer_name, c.email, c.ref, c.phone ?? "", c.description].some((v) => v.toLowerCase().includes(s)))
+      .sort((a, b) => {
+        if (order === "oldest") return a.created_at.localeCompare(b.created_at);
+        if (order === "updated") return b.status_updated_at.localeCompare(a.status_updated_at);
+        return b.created_at.localeCompare(a.created_at);
+      });
+  }, [claims, q, statusFilter, order]);
 
   const newCount = claims.filter((c) => !c.seen).length;
   const selected = claims.find((c) => c.id === openId) ?? null;
@@ -149,6 +164,8 @@ function AdminPage() {
   });
 
   async function signOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
@@ -197,22 +214,66 @@ function AdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-5">
-        <div className="relative mb-4">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name, email, claim ID…"
-            className="w-full rounded-lg border border-input bg-surface py-2.5 pl-9 pr-3 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
-          />
+        <div className="mb-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search name, email, claim ID…"
+              aria-label="Search claims"
+              className="w-full rounded-lg border border-input bg-surface py-2.5 pl-9 pr-3 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+            />
+          </div>
+          <select
+            value={order}
+            onChange={(e) => setOrder(e.target.value as "newest" | "oldest" | "updated")}
+            aria-label="Order claims"
+            className="rounded-lg border border-input bg-surface px-3 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+          >
+            <option value="newest">Newest first</option>
+            <option value="updated">Recently updated</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
+
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-1" aria-label="Filter claims by progress">
+          {(["all", ...STATUS_STEPS.map((step) => step.key)] as const).map((key) => {
+            const count = key === "all" ? claims.length : claims.filter((claim) => claim.status === key).length;
+            const label = key === "all" ? "All" : statusLabel(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setStatusFilter(key)}
+                aria-pressed={statusFilter === key}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors ${statusFilter === key ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface hover:bg-card"}`}
+              >
+                {label} <span className="ml-1 opacity-70">{count}</span>
+              </button>
+            );
+          })}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="animate-spin text-muted-foreground" />
+          <div className="overflow-hidden rounded-xl border border-border bg-surface" aria-label="Loading claims">
+            {[0, 1, 2, 3, 4].map((item) => (
+              <div key={item} className="grid animate-pulse gap-3 border-b border-border px-4 py-4 last:border-0 sm:grid-cols-[1.3fr_2fr_auto]">
+                <span className="h-4 w-32 rounded bg-muted" />
+                <span className="h-4 w-full rounded bg-muted" />
+                <span className="h-4 w-24 rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
+            <AlertCircle className="h-5 w-5" />
+            Claims could not be loaded. Refresh the page to try again.
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">No claims yet. New ones appear here instantly.</p>
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            {claims.length === 0 ? "No claims yet. New ones appear here instantly." : "No claims match these filters."}
+          </p>
         ) : (
           <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
             {filtered.map((c) => (
@@ -300,12 +361,13 @@ function ClaimDrawer({
   const [note, setNote] = useState(claim.internal_note ?? "");
   const [saving, setSaving] = useState<"" | "reply" | "note">("");
   const current = statusIndex(claim.status);
+  const progressWidth = ["w-1/4", "w-1/2", "w-3/4", "w-full"][current] ?? "w-1/4";
   const area =
     "w-full resize-none rounded-lg border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30";
 
   return (
-    <div className="fixed inset-0 z-30 flex justify-end bg-coffee/40" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <aside className="h-full w-full max-w-md overflow-y-auto bg-surface p-5 shadow-xl sm:p-6">
+    <div className="fixed inset-0 z-30 flex justify-end bg-coffee/40 backdrop-blur-[1px]" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <aside className="animate-panel-in-right h-full w-full max-w-md overflow-y-auto overscroll-contain bg-surface p-5 shadow-xl sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-mono text-xs text-muted-foreground">{claim.ref}</p>
@@ -338,6 +400,9 @@ function ClaimDrawer({
                 {s.label}
               </button>
             ))}
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`Claim progress: step ${current + 1} of ${STATUS_STEPS.length}`}>
+            <div className={`h-full rounded-full bg-trustpilot transition-[width] duration-300 ${progressWidth}`} />
           </div>
         </section>
 

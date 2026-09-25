@@ -61,6 +61,8 @@ function ChatsPage() {
   const updatePresence = useServerFn(updateStaffChatPresence);
   const [access, setAccess] = useState<"checking" | "yes" | "no">("checking");
   const [convos, setConvos] = useState<Convo[]>([]);
+  const [loadingConvos, setLoadingConvos] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [msgs, setMsgs] = useState<Record<string, Msg[]>>({});
   const [openId, setOpenId] = useState<string | null>(null);
   const [q, setQ] = useState("");
@@ -87,7 +89,15 @@ function ChatsPage() {
       .select(COLS)
       .order("last_message_at", { ascending: false })
       .limit(500)
-      .then(({ data }) => setConvos((data as Convo[]) ?? []));
+      .then(({ data, error }) => {
+        if (error) {
+          setLoadError(true);
+        } else {
+          setConvos((data as Convo[]) ?? []);
+          setLoadError(false);
+        }
+        setLoadingConvos(false);
+      });
     const ch = supabase
       .channel("staff-chats")
       .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, (p) => {
@@ -216,7 +226,14 @@ function ChatsPage() {
             </div>
           </div>
           <ul className="flex-1 overflow-y-auto">
-            {filtered.length === 0 && <li className="p-6 text-center text-sm text-muted-foreground">No conversations yet.</li>}
+            {loadingConvos && [0, 1, 2, 3, 4].map((item) => (
+              <li key={item} className="animate-pulse border-b border-border px-4 py-4" aria-hidden="true">
+                <div className="h-4 w-28 rounded bg-muted" />
+                <div className="mt-2 h-3 w-44 rounded bg-muted" />
+              </li>
+            ))}
+            {!loadingConvos && loadError && <li className="p-6 text-center text-sm text-muted-foreground">Conversations could not be loaded. Refresh to try again.</li>}
+            {!loadingConvos && !loadError && filtered.length === 0 && <li className="p-6 text-center text-sm text-muted-foreground">No conversations match this view.</li>}
             {filtered.map((c) => (
               <li key={c.id}>
                 <button onClick={() => open(c)} className={`block w-full border-b border-border px-4 py-3 text-left hover:bg-card ${c.id === openId ? "bg-card" : ""}`}>
@@ -253,7 +270,7 @@ function ChatsPage() {
               onInfo={() => setShowInfo((v) => !v)}
               run={run}
             />
-            <aside className={`${showInfo ? "fixed inset-0 z-30 block bg-background" : "hidden"} w-full overflow-y-auto border-l border-border p-5 lg:static lg:block lg:w-72`}>
+            <aside className={`${showInfo ? "fixed inset-0 z-30 block animate-panel-in-right bg-background" : "hidden"} w-full overflow-y-auto overscroll-contain border-l border-border p-5 lg:static lg:block lg:w-72`}>
               <div className="mb-4 flex items-center justify-between">
                 <p className="font-serif text-lg">Customer details</p>
                 <button onClick={() => setShowInfo(false)} className="lg:hidden" aria-label="Close details">
@@ -306,9 +323,12 @@ function ChatPanel({
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const previousMessageCount = useRef(0);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    const count = messages?.length ?? 0;
+    endRef.current?.scrollIntoView({ block: "end", behavior: count > previousMessageCount.current ? "smooth" : "auto" });
+    previousMessageCount.current = count;
   }, [messages?.length]);
   useEffect(() => inputRef.current?.focus(), []);
 
@@ -338,7 +358,7 @@ function ChatPanel({
         <button className={`${btn} lg:hidden`} onClick={onInfo}><Info className="mr-1 inline h-3 w-3" />Details</button>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+      <div className="flex-1 space-y-3 overflow-y-auto overscroll-contain px-4 py-4">
         {!messages && <Loader2 className="mx-auto animate-spin text-muted-foreground" />}
         {messages?.map((m) => <StaffBubble key={m.id} m={m} />)}
         <div ref={endRef} />

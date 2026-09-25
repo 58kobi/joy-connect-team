@@ -11,6 +11,7 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
         className="absolute inset-0 -z-10 h-full w-full object-cover object-right"
         width={1920}
         height={1080}
+        fetchPriority="high"
       />
       <div className="absolute inset-0 -z-10 bg-coffee/70" />
 
@@ -32,7 +33,7 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
           </p>
 
           <form
-            className="mt-8 flex max-w-xl flex-col gap-2 rounded-2xl bg-surface p-2 sm:flex-row sm:items-center sm:rounded-full sm:p-1.5"
+            className="mt-8 flex max-w-xl flex-col gap-2 rounded-2xl bg-surface p-2 shadow-lg transition-[box-shadow,transform] duration-200 focus-within:-translate-y-0.5 focus-within:ring-4 focus-within:ring-primary-foreground/20 sm:flex-row sm:items-center sm:rounded-full sm:p-1.5"
             onSubmit={(e) => {
               e.preventDefault();
               onGetHelp(query.trim());
