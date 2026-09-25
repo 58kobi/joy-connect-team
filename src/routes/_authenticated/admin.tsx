@@ -544,6 +544,92 @@ function AdminPage() {
   );
 }
 
+function SidebarLink({ icon, label, active, badge, onClick }: { icon: ReactNode; label: string; active?: boolean | undefined; badge?: number | undefined; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${active ? "bg-console-accent font-medium" : "opacity-75 hover:bg-console-nav-fg/10 hover:opacity-100"}`}
+    >
+      {icon}
+      <span className="flex-1">{label}</span>
+      {!!badge && <span className="rounded-full bg-console-pink px-1.5 text-[10px] font-semibold">{badge}</span>}
+    </button>
+  );
+}
+
+const TONES = {
+  accent: "bg-console-accent-soft text-console-accent",
+  pink: "bg-console-pink/10 text-console-pink",
+  orange: "bg-console-orange/10 text-console-orange",
+  blue: "bg-console-blue/10 text-console-blue",
+  green: "bg-console-green/10 text-console-green",
+  red: "bg-console-red/10 text-console-red",
+} as const;
+
+function MetricCard({ label, value, icon, tone, live }: { label: string; value: number; icon: ReactNode; tone: keyof typeof TONES; live?: boolean | undefined }) {
+  return (
+    <div className="rounded-xl border border-console-line bg-surface p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <span className={`grid h-9 w-9 place-items-center rounded-lg ${TONES[tone]}`}>{icon}</span>
+        {live && (
+          <span className="flex items-center gap-1 text-[10px] font-medium text-console-green">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-console-green" /> Live
+          </span>
+        )}
+      </div>
+      <p className="mt-3 text-2xl font-semibold">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function SectionHeader({ title, children }: { title: string; children?: ReactNode }) {
+  return (
+    <div className="flex items-center justify-between px-5 py-4">
+      <h2 className="text-sm font-semibold">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function Avatar({ name }: { name: string }) {
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("") || "?";
+  return (
+    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-console-accent-soft text-xs font-semibold text-console-accent">
+      {initials}
+    </span>
+  );
+}
+
+function ActivityIcon({ kind }: { kind: Feed["kind"] }) {
+  const map = {
+    new: { i: <Inbox size={15} />, t: TONES.accent },
+    chat: { i: <MessageSquare size={15} />, t: TONES.pink },
+    status: { i: <Clock size={15} />, t: TONES.blue },
+    reply: { i: <Mail size={15} />, t: TONES.green },
+    note: { i: <FileText size={15} />, t: TONES.orange },
+  }[kind];
+  return <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${map.t}`}>{map.i}</span>;
+}
+
+function FeedList({ items, now, empty }: { items: Feed[]; now: number; empty: string }) {
+  if (items.length === 0) return <p className="px-5 pb-5 text-sm text-muted-foreground">{empty}</p>;
+  return (
+    <ul className="pb-2">
+      {items.map((a) => (
+        <li key={a.id} className="flex items-center gap-3 px-5 py-2.5">
+          <ActivityIcon kind={a.kind} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{a.title}</p>
+            <p className="truncate text-xs text-muted-foreground">{a.subtitle}</p>
+          </div>
+          <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(a.at, now)}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function StatusPill({ status }: { status: ClaimStatus }) {
   const i = statusIndex(status);
   return (
