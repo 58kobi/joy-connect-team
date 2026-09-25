@@ -255,6 +255,7 @@ export function CareChat() {
                 {pending && <Bubble m={{ id: "p", sender: "customer", body: pending, created_at: new Date().toISOString() }} faded />}
                 {busy && pending && !isHuman && <Typing label="Care Assistant is typing…" />}
                 <div ref={endRef} />
+                </div>
               </div>
               {error && <p className="px-4 pb-1 text-xs text-destructive">{error}</p>}
               {!isHuman && customerCount > 0 && (
@@ -267,7 +268,7 @@ export function CareChat() {
                   e.preventDefault();
                   submit(input);
                 }}
-                className="flex items-end gap-2 border-t border-border p-3"
+                className="flex items-end gap-2 border-t border-border bg-card/60 p-3 backdrop-blur sm:px-6"
               >
                 <textarea
                   value={input}
