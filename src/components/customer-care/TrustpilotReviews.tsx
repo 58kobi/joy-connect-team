@@ -212,6 +212,7 @@ function ReplyItem({
 }
 
 type Review = {
+  dbId?: string | undefined;
   name: string;
   time: string;
   rating: number;
@@ -374,7 +375,7 @@ function ReviewCard({
   const [showThread, setShowThread] = useState(true);
   const [replies, setReplies] = useState<Reply[]>([]);
   const now = Date.now();
-  const reviewKey = review.name;
+  const reviewKey = review.dbId ?? review.name;
 
   useEffect(() => {
     let active = true;
@@ -420,12 +421,27 @@ function ReviewCard({
     };
   }, [reviewKey]);
 
-  function handleLike() {
+  useEffect(() => {
+    if (review.dbId && readLiked().has(`review:${review.dbId}`)) setLiked(true);
+  }, [review.dbId]);
+
+  async function handleLike() {
+    const delta = liked ? -1 : 1;
     setLiked((current) => !current);
 
     setLikeCount((current) =>
       liked ? Math.max(0, current - 1) : current + 1
     );
+
+    if (review.dbId) {
+      const set = readLiked();
+      const k = `review:${review.dbId}`;
+      if (delta === 1) set.add(k);
+      else set.delete(k);
+      writeLiked(set);
+      const { data, error } = await supabase.rpc("like_review", { _id: review.dbId, _delta: delta });
+      if (!error && typeof data === "number") setLikeCount(data);
+    }
   }
 
   async function addReply(parentId: string | null, name: string, text: string) {
@@ -586,21 +602,38 @@ function LeaveAReview({
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [sending, setSending] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const trimmedName = name.trim();
     const trimmedText = text.trim();
 
     if (!trimmedName || !trimmedText) return;
+    if (trimmedName.length < 2 || trimmedName.length > 80) {
+      toast.error("Please enter a name between 2 and 80 characters.");
+      return;
+    }
+    if (trimmedText.length < 10 || trimmedText.length > 1000) {
+      toast.error("Your review should be between 10 and 1000 characters.");
+      return;
+    }
 
-    onSubmit({
-      name: trimmedName,
-      time: "Just now",
-      rating,
-      text: trimmedText,
-      likes: 0,
-    });
+    setSending(true);
+    const { data, error } = await supabase
+      .from("reviews")
+      .insert({ name: trimmedName, rating, body: trimmedText })
+      .select("id,name,rating,body,likes,created_at")
+      .single();
+    setSending(false);
+    if (error || !data) {
+      toast.error("Couldn't submit your review. Please try again.");
+      return;
+    }
+
+    onSubmit(rowToReview(data));
+    toast.success("Thanks for your review!");
 
     setName("");
     setRating(5);
@@ -699,11 +732,50 @@ function LeaveAReview({
   );
 }
 
+type ReviewRow = { id: string; name: string; rating: number; body: string; likes: number; created_at: string };
+
+function rowToReview(r: ReviewRow): Review {
+  return {
+    dbId: r.id,
+    name: r.name,
+    time: relativeTime(new Date(r.created_at).getTime(), Date.now()),
+    rating: r.rating,
+    text: r.body,
+    likes: r.likes,
+  };
+}
+
 export function TrustpilotReviews() {
-  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+  const [saved, setSaved] = useState<Review[]>([]);
+  const reviews = [...saved, ...INITIAL_REVIEWS];
+
+  useEffect(() => {
+    supabase
+      .from("reviews")
+      .select("id,name,rating,body,likes,created_at")
+      .eq("approved", true)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setSaved(data.map(rowToReview));
+      });
+    const ch = supabase
+      .channel("public-reviews")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "reviews" }, (p) => {
+        const row = p.new as ReviewRow;
+        setSaved((cur) => (cur.some((r) => r.dbId === row.id) ? cur : [rowToReview(row), ...cur]));
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "reviews" }, (p) => {
+        const id = (p.old as { id?: string }).id;
+        if (id) setSaved((cur) => cur.filter((r) => r.dbId !== id));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
 
   function addReview(review: Review) {
-    setReviews((current) => [review, ...current]);
+    setSaved((current) => (current.some((r) => r.dbId === review.dbId) ? current : [review, ...current]));
   }
 
   return (
