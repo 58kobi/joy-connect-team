@@ -45,7 +45,6 @@ export function CareChat() {
   const seenCount = useRef(0);
   const previousVisibleCount = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const t = window.localStorage.getItem(KEY);
@@ -270,7 +269,6 @@ export function CareChat() {
                 className="flex items-end gap-2 border-t border-border p-3"
               >
                 <textarea
-                  ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
