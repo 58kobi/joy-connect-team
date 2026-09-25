@@ -178,6 +178,44 @@ export type Database = {
         }
         Relationships: []
       }
+      review_replies: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          likes: number
+          name: string
+          parent_id: string | null
+          review_key: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          likes?: number
+          name: string
+          parent_id?: string | null
+          review_key: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          likes?: number
+          name?: string
+          parent_id?: string | null
+          review_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_replies_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "review_replies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           approved: boolean
@@ -252,6 +290,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      like_review_reply: {
+        Args: { _delta: number; _id: string }
+        Returns: number
       }
     }
     Enums: {
