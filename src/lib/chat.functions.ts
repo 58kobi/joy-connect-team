@@ -64,10 +64,16 @@ async function publicState(token: string) {
     .neq("sender", "note")
     .order("created_at", { ascending: true })
     .limit(500);
+  const onlineSince = new Date(Date.now() - 45_000).toISOString();
+  const { count: onlineStaff } = await db
+    .from("staff_chat_presence")
+    .select("user_id", { count: "exact", head: true })
+    .gte("last_seen_at", onlineSince);
   return {
     mode: c.mode as "ai" | "human",
     status: c.status as ChatStatus,
     messages: (msgs ?? []) as PublicMessage[],
+    staffOnline: (onlineStaff ?? 0) > 0,
   };
 }
 
@@ -92,6 +98,16 @@ export const startChat = createServerFn({ method: "POST" })
 export const getChat = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ token: tokenSchema }).parse(d))
   .handler(async ({ data }) => publicState(data.token));
+
+export const getStaffAvailability = createServerFn({ method: "GET" }).handler(async () => {
+  const db = await admin();
+  const onlineSince = new Date(Date.now() - 45_000).toISOString();
+  const { count } = await db
+    .from("staff_chat_presence")
+    .select("user_id", { count: "exact", head: true })
+    .gte("last_seen_at", onlineSince);
+  return { staffOnline: (count ?? 0) > 0 };
+});
 
 export const requestHuman = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ token: tokenSchema }).parse(d))
@@ -164,6 +180,19 @@ export const sendChatMessage = createServerFn({ method: "POST" })
   });
 
 // ---------- Staff ----------
+
+export const updateStaffChatPresence = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { error } = await context.supabase.from("staff_chat_presence").upsert(
+      { user_id: context.userId, last_seen_at: new Date().toISOString() },
+      { onConflict: "user_id" },
+    );
+    if (error) throw new Error("Could not update chat availability");
+    return { ok: true };
+  });
 
 export const staffChatAction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

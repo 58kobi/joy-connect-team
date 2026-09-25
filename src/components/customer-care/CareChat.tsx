@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Bot, Headset, MessageCircle, RotateCcw, Send, X } from "lucide-react";
 import {
   getChat,
+  getStaffAvailability,
   requestHuman,
   sendChatMessage,
   startChat,
@@ -21,13 +22,14 @@ const QUICK = [
   "Talk to a Person",
 ];
 
-type State = { mode: "ai" | "human"; status: ChatStatus; messages: PublicMessage[] };
+type State = { mode: "ai" | "human"; status: ChatStatus; messages: PublicMessage[]; staffOnline: boolean };
 
 const time = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 export function CareChat() {
   const start = useServerFn(startChat);
   const get = useServerFn(getChat);
+  const getAvailability = useServerFn(getStaffAvailability);
   const send = useServerFn(sendChatMessage);
   const human = useServerFn(requestHuman);
 
@@ -39,6 +41,7 @@ export function CareChat() {
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
+  const [staffOnline, setStaffOnline] = useState(false);
   const seenCount = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -73,6 +76,21 @@ export function CareChat() {
       window.clearInterval(iv);
     };
   }, [token, open, get, apply]);
+
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    const tick = () =>
+      getAvailability()
+        .then((result) => alive && setStaffOnline(result.staffOnline))
+        .catch(() => {});
+    tick();
+    const interval = window.setInterval(tick, 10_000);
+    return () => {
+      alive = false;
+      window.clearInterval(interval);
+    };
+  }, [open, getAvailability]);
 
   const visibleCount = state?.messages.length ?? 0;
   useEffect(() => {
@@ -147,6 +165,7 @@ export function CareChat() {
   }
 
   const isHuman = state?.mode === "human";
+  const isStaffOnline = state?.staffOnline ?? staffOnline;
   const customerCount = state?.messages.filter((m) => m.sender === "customer").length ?? 0;
 
   return (
@@ -176,9 +195,10 @@ export function CareChat() {
             <Avatar human={isHuman} inverted />
             <div className="min-w-0 flex-1">
               <p className="font-serif text-base leading-tight">Care Assistant</p>
-              <p className="text-xs opacity-75">
-                {isHuman ? "Support specialist · independent service" : "Automated assistant · replies instantly"}
-              </p>
+               <p className="flex items-center gap-1.5 text-xs opacity-80">
+                 {isHuman && isStaffOnline && <span className="h-2 w-2 rounded-full bg-trustpilot" aria-hidden="true" />}
+                 {isHuman ? (isStaffOnline ? "Staff online" : "Waiting for a support specialist") : "Automated assistant · replies instantly"}
+               </p>
             </div>
             {state && (
               <button onClick={reset} aria-label="Start a new conversation" className="rounded-full p-2 opacity-80 hover:bg-primary-foreground/10 hover:opacity-100">
@@ -196,7 +216,14 @@ export function CareChat() {
               <p className="mt-1 text-sm text-muted-foreground">Choose how you&rsquo;d like to continue:</p>
               <div className="mt-5 space-y-3">
                 <ChoiceButton icon={<Bot className="h-5 w-5" />} label="Get help with Care Assistant" hint="Instant answers to common questions" onClick={() => begin("ai")} disabled={busy} />
-                <ChoiceButton icon={<Headset className="h-5 w-5" />} label="Talk to a support specialist" hint="Chat with a member of our team" onClick={() => begin("human")} disabled={busy} />
+                 <ChoiceButton
+                   icon={<Headset className="h-5 w-5" />}
+                   label="Talk to a support specialist"
+                   hint={isStaffOnline ? "Staff online now" : "Leave a message for our team"}
+                   online={isStaffOnline}
+                   onClick={() => begin("human")}
+                   disabled={busy}
+                 />
               </div>
               <p className="mt-3 text-xs text-muted-foreground">You can switch to a support specialist at any time.</p>
               <p className="mt-6 text-xs font-medium uppercase tracking-wider text-muted-foreground">Or start with</p>
@@ -215,7 +242,6 @@ export function CareChat() {
                 {customerCount === 0 && !pending && <QuickActions onPick={quick} disabled={busy} />}
                 {pending && <Bubble m={{ id: "p", sender: "customer", body: pending, created_at: new Date().toISOString() }} faded />}
                 {busy && pending && !isHuman && <Typing label="Care Assistant is typing…" />}
-                {isHuman && state.status === "active" && !busy && <Typing label="Support specialist is replying…" subtle />}
                 <div ref={endRef} />
               </div>
               {error && <p className="px-4 pb-1 text-xs text-destructive">{error}</p>}
@@ -292,9 +318,9 @@ function Bubble({ m, faded }: { m: PublicMessage; faded?: boolean | undefined })
   );
 }
 
-function Typing({ label, subtle }: { label: string; subtle?: boolean }) {
+function Typing({ label }: { label: string }) {
   return (
-    <div className={`flex items-center gap-2 text-xs text-muted-foreground ${subtle ? "opacity-70" : ""}`}>
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span className="flex gap-1">
         {[0, 1, 2].map((i) => (
           <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: `${i * 150}ms` }} />
@@ -305,13 +331,16 @@ function Typing({ label, subtle }: { label: string; subtle?: boolean }) {
   );
 }
 
-function ChoiceButton({ icon, label, hint, onClick, disabled }: { icon: React.ReactNode; label: string; hint: string; onClick: () => void; disabled: boolean }) {
+function ChoiceButton({ icon, label, hint, online, onClick, disabled }: { icon: React.ReactNode; label: string; hint: string; online?: boolean | undefined; onClick: () => void; disabled: boolean }) {
   return (
     <button onClick={onClick} disabled={disabled} className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-foreground/40 disabled:opacity-50">
       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-cream">{icon}</span>
       <span>
         <span className="block text-sm font-medium">{label}</span>
-        <span className="block text-xs text-muted-foreground">{hint}</span>
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {online && <span className="h-2 w-2 rounded-full bg-trustpilot" aria-hidden="true" />}
+          {hint}
+        </span>
       </span>
     </button>
   );

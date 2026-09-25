@@ -5,7 +5,7 @@ import { ArrowLeft, Bot, Headset, Info, Loader2, Lock, Search, Send, StickyNote,
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAdmin } from "@/lib/claims.functions";
-import { staffChatAction, type ChatSender, type ChatStatus } from "@/lib/chat.functions";
+import { staffChatAction, updateStaffChatPresence, type ChatSender, type ChatStatus } from "@/lib/chat.functions";
 import { timeAgo } from "@/lib/claim-status";
 
 export const Route = createFileRoute("/_authenticated/chats")({
@@ -58,6 +58,7 @@ const STATUS_TONE: Record<ChatStatus, string> = {
 function ChatsPage() {
   const checkAdmin = useServerFn(ensureAdmin);
   const act = useServerFn(staffChatAction);
+  const updatePresence = useServerFn(updateStaffChatPresence);
   const [access, setAccess] = useState<"checking" | "yes" | "no">("checking");
   const [convos, setConvos] = useState<Convo[]>([]);
   const [msgs, setMsgs] = useState<Record<string, Msg[]>>({});
@@ -75,6 +76,12 @@ function ChatsPage() {
 
   useEffect(() => {
     if (access !== "yes") return;
+    const heartbeat = () => {
+      if (document.visibilityState === "visible") updatePresence().catch(() => {});
+    };
+    heartbeat();
+    const presenceInterval = window.setInterval(heartbeat, 20_000);
+    document.addEventListener("visibilitychange", heartbeat);
     supabase
       .from("chat_conversations")
       .select(COLS)
@@ -107,8 +114,10 @@ function ChatsPage() {
     return () => {
       supabase.removeChannel(ch);
       window.clearInterval(tick);
+      window.clearInterval(presenceInterval);
+      document.removeEventListener("visibilitychange", heartbeat);
     };
-  }, [access]);
+  }, [access, updatePresence]);
 
   const open = useCallback(
     (c: Convo) => {
@@ -348,7 +357,7 @@ function ChatPanel({
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 submit();
               }
