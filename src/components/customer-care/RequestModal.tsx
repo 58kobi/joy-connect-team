@@ -11,13 +11,11 @@ export function RequestModal({
   initialCategory,
   initialQuery,
   onClose,
-  onTracked,
 }: {
   open: boolean;
   initialCategory?: string | undefined;
   initialQuery?: string | undefined;
   onClose: () => void;
-  onTracked: () => void;
 }) {
   const [phase, setPhase] = useState<Phase>("form");
   const [category, setCategory] = useState(initialCategory ?? DEFAULT_CATEGORY);
@@ -136,21 +134,11 @@ export function RequestModal({
                 {reference}
               </p>
             </div>
-            <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onTracked();
-                }}
-                className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-coffee"
-              >
-                Track this request
-              </button>
+            <div className="mt-6 flex justify-center">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-card"
+                className="rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-coffee"
               >
                 Done
               </button>
