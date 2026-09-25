@@ -292,7 +292,7 @@ function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-console-bg text-console-ink">
+    <div className="staff-console min-h-screen w-full max-w-full overflow-x-hidden bg-console-bg text-console-ink">
       {navOpen && <div className="fixed inset-0 z-30 bg-console-nav/40 lg:hidden" onClick={() => setNavOpen(false)} />}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-console-nav text-console-nav-fg transition-transform duration-200 lg:translate-x-0 ${navOpen ? "translate-x-0" : "-translate-x-full"}`}
@@ -325,7 +325,7 @@ function AdminPage() {
         </div>
       </aside>
 
-      <div className="lg:pl-60">
+      <div className="min-w-0 max-w-full lg:pl-60">
         <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-console-line bg-surface px-4 py-3 sm:px-6">
           <button onClick={() => setNavOpen(true)} aria-label="Open menu" className="rounded-lg p-2 hover:bg-console-bg lg:hidden">
             <Menu size={18} />
@@ -344,13 +344,13 @@ function AdminPage() {
           </div>
         </header>
 
-        <main className="px-4 py-6 sm:px-6">
-          <div className="mb-6">
+        <main className="w-full min-w-0 max-w-full px-4 py-6 sm:px-6">
+          <div className="mb-6 min-w-0">
             <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Overview of customer requests, chats and recent activity.</p>
+            <p className="mt-1 break-words text-sm text-muted-foreground">Overview of customer requests, chats and recent activity.</p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+          <div className="mb-6 grid min-w-0 grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
             <MetricCard label="New Requests" value={newCount} icon={<Inbox size={18} />} tone="accent" live />
             <MetricCard label="Unread Chats" value={unreadChats} icon={<MessageSquare size={18} />} tone="pink" live />
             <MetricCard label="Under Review" value={underReview} icon={<FileText size={18} />} tone="orange" />
@@ -359,9 +359,9 @@ function AdminPage() {
             <MetricCard label="Needs Attention" value={needsAttention} icon={<AlertTriangle size={18} />} tone="red" />
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
             <div className="min-w-0 space-y-6">
-              <section id="recent-claims" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
+              <section id="recent-claims" className="min-w-0 scroll-mt-20 overflow-hidden rounded-xl border border-console-line bg-surface shadow-sm">
                 <SectionHeader title="Recent Claims">
                   <select
                     value={order}
@@ -404,7 +404,31 @@ function AdminPage() {
                     {claims.length === 0 ? "No claims yet. New ones appear here instantly." : "No claims match these filters."}
                   </p>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <>
+                  <ul className="divide-y divide-console-line border-t border-console-line md:hidden">
+                    {filtered.map((c) => (
+                      <li key={c.id} className={`min-w-0 px-4 py-3 ${openId === c.id ? "bg-console-accent-soft" : ""}`}>
+                        <div className="flex min-w-0 items-center justify-between gap-2">
+                          <span className="flex min-w-0 items-center gap-1.5 font-mono text-xs">
+                            {!c.seen && <span className="h-2 w-2 shrink-0 rounded-full bg-console-red" aria-label="New" />}
+                            <span className="truncate">{c.ref}</span>
+                          </span>
+                          <span className="shrink-0 text-xs"><StatusPill status={c.status} /></span>
+                        </div>
+                        <p className="mt-1.5 truncate text-sm font-medium">{c.customer_name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{c.category}</p>
+                        <div className="mt-2 flex min-w-0 items-center justify-between gap-2">
+                          <span className="min-w-0 truncate text-[11px] text-muted-foreground">
+                            Updated {formatDateTime(c.status_updated_at)}
+                          </span>
+                          <button onClick={() => open(c)} className="shrink-0 rounded-lg border border-console-line px-3 py-1 text-xs font-medium text-console-accent transition hover:bg-console-accent-soft">
+                            View
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="hidden overflow-x-auto md:block">
                     <table className="w-full min-w-[920px] text-left text-sm">
                       <thead>
                         <tr className="border-y border-console-line bg-console-bg text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -450,6 +474,7 @@ function AdminPage() {
                       </tbody>
                     </table>
                   </div>
+                  </>
                 )}
               </section>
 
@@ -459,7 +484,7 @@ function AdminPage() {
               </section>
             </div>
 
-            <div className="space-y-6">
+            <div className="min-w-0 space-y-6">
               <section className="rounded-xl border border-console-line bg-surface shadow-sm">
                 <SectionHeader title="Live Chats">
                   <Link to="/chats" className="text-xs font-medium text-console-accent hover:underline">View all</Link>
