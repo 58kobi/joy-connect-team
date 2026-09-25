@@ -111,7 +111,7 @@ function TpLogo({ size = 20 }: { size?: number }) {
       >
         <Star size={size - 8} strokeWidth={0} className="fill-white text-white" />
       </span>
-      <span className="font-sans text-lg font-bold tracking-tight">Trustpilot</span>
+      <span className="font-sans text-lg font-bold tracking-tight">Reviews</span>
     </span>
   );
 }
