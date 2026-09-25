@@ -132,8 +132,8 @@ function ReplyItem({
   all: Reply[];
   depth: number;
   now: number;
-  onLike: (id: number) => void;
-  onReply: (parentId: number, name: string, text: string) => void;
+  onLike: (id: string) => void;
+  onReply: (parentId: string, name: string, text: string) => void;
 }) {
   const [replying, setReplying] = useState(false);
   const children = all.filter((r) => r.parentId === reply.id);
