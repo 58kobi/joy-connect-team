@@ -25,8 +25,8 @@ export function Footer() {
             <img
               src={logoAsset.url}
               alt="Debenhams"
-              width={217}
-              height={40}
+              width={206}
+              height={36}
               className="h-9 w-auto"
             />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/55">

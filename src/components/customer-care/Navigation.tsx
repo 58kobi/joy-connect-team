@@ -23,8 +23,8 @@ export function Navigation() {
           <img
             src={logoAsset.url}
             alt="Debenhams"
-            width={217}
-            height={40}
+            width={206}
+            height={36}
             className="h-8 w-auto sm:h-9"
           />
         </a>
