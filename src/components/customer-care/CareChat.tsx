@@ -119,9 +119,6 @@ export function CareChat() {
     previousVisibleCount.current = visibleCount;
   }, [visibleCount, pending, busy, open]);
 
-  useEffect(() => {
-    if (open && state && !busy) inputRef.current?.focus();
-  }, [open, state, busy]);
 
   async function begin(mode: "ai" | "human", firstMessage?: string) {
     setBusy(true);
@@ -204,7 +201,7 @@ export function CareChat() {
         <div
           role="dialog"
           aria-label="Care Assistant"
-          className="animate-panel-up fixed inset-x-0 bottom-0 z-50 flex max-h-[55vh] flex-col rounded-t-2xl border border-border bg-background shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[50vh] sm:max-h-[50vh] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl"
+          className="animate-soft-enter fixed inset-0 z-50 flex flex-col bg-background"
         >
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
             <Avatar human={isHuman} inverted />
