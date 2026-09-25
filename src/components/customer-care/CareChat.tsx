@@ -244,6 +244,7 @@ export function CareChat() {
               <p className="mt-auto pt-6 text-[11px] leading-relaxed text-muted-foreground">
                 Independent customer support service. Never share passwords, card numbers or security codes in chat.
               </p>
+              </div>
             </div>
           ) : (
             <>
