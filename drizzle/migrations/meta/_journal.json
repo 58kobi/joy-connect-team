@@ -8,6 +8,13 @@
       "when": 1790294301129,
       "tag": "0000_claims_admin_tracking",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790295299353,
+      "tag": "0001_lock_claim_tracking_reads",
+      "breakpoints": true
     }
   ]
 }
