@@ -290,124 +290,234 @@ function AdminPage() {
       </div>
     );
 
+  const scrollTo = (id: string) => {
+    setNavOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-          <p className="font-serif text-lg tracking-wide">Claims</p>
-          <Link to="/chats" className="rounded-full border border-primary-foreground/30 px-3 py-1 text-xs hover:bg-coffee">
-            Live Chats
-          </Link>
-          {newCount > 0 && (
-            <span className="rounded-full bg-primary-foreground px-2 py-0.5 text-xs font-medium text-primary">
-              {newCount} new
-            </span>
-          )}
-          <span className="ml-auto hidden text-xs opacity-70 sm:inline">
-            {claims.length} open · live
-            <span className="ml-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-trustpilot align-middle" />
-          </span>
-          <button onClick={signOut} aria-label="Sign out" className="rounded-full p-2 hover:bg-coffee">
-            <LogOut size={16} />
+    <div className="min-h-screen bg-console-bg text-console-ink">
+      {navOpen && <div className="fixed inset-0 z-30 bg-console-nav/40 lg:hidden" onClick={() => setNavOpen(false)} />}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col bg-console-nav text-console-nav-fg transition-transform duration-200 lg:translate-x-0 ${navOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="px-6 pb-6 pt-7">
+          <img src={logoAsset.url} alt="Debenhams" width={160} height={28} className="h-auto w-40" />
+          <p className="mt-2 text-[11px] tracking-wide opacity-60">Better Style. Brighter Days.</p>
+        </div>
+        <nav className="flex-1 space-y-1 px-3 text-sm">
+          <SidebarLink icon={<LayoutDashboard size={17} />} label="Dashboard" active onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+          <SidebarLink icon={<ClipboardList size={17} />} label="Claims" badge={newCount} onClick={() => scrollTo("recent-claims")} />
+          <SidebarLink icon={<MessageSquare size={17} />} label="Live Chats" badge={unreadChats} onClick={() => navigate({ to: "/chats" })} />
+          <SidebarLink icon={<Users size={17} />} label="Customers" onClick={() => scrollTo("recent-claims")} />
+          <SidebarLink icon={<Package size={17} />} label="Orders" onClick={() => scrollTo("recent-claims")} />
+          <SidebarLink icon={<Bell size={17} />} label="Notifications" badge={notifications.length} onClick={() => scrollTo("notifications")} />
+          <SidebarLink icon={<Activity size={17} />} label="Activity History" onClick={() => scrollTo("recent-activity")} />
+          <SidebarLink icon={<Settings size={17} />} label="Settings" onClick={() => toast("Settings are managed by your administrator.")} />
+        </nav>
+        <div className="border-t border-console-nav-fg/10 p-4">
+          <div className="flex items-center gap-3">
+            <Avatar name={staffName} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium">{staffName}</p>
+              <p className="text-[11px] opacity-60">Staff Member</p>
+            </div>
+          </div>
+          <button onClick={signOut} className="mt-3 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm opacity-80 transition hover:bg-console-nav-fg/10 hover:opacity-100">
+            <LogOut size={16} /> Logout
           </button>
         </div>
-      </header>
+      </aside>
 
-      <main className="mx-auto max-w-6xl px-4 py-5">
-        <div className="mb-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="relative">
+      <div className="lg:pl-60">
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-console-line bg-surface px-4 py-3 sm:px-6">
+          <button onClick={() => setNavOpen(true)} aria-label="Open menu" className="rounded-lg p-2 hover:bg-console-bg lg:hidden">
+            <Menu size={18} />
+          </button>
+          <div className="relative ml-auto w-full max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search name, email, claim ID…"
+              placeholder="Search by name, email, phone, order, or claim ID..."
               aria-label="Search claims"
-              className="w-full rounded-lg border border-input bg-surface py-2.5 pl-9 pr-3 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
+              className="w-full rounded-lg border border-console-line bg-console-bg py-2 pl-9 pr-3 text-sm outline-none focus:border-console-accent focus:ring-2 focus:ring-console-accent/20"
             />
           </div>
-          <select
-            value={order}
-            onChange={(e) => setOrder(e.target.value as "newest" | "oldest" | "updated")}
-            aria-label="Order claims"
-            className="rounded-lg border border-input bg-surface px-3 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
-          >
-            <option value="newest">Newest first</option>
-            <option value="updated">Recently updated</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
-
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1" aria-label="Filter claims by progress">
-          {(["all", ...STATUS_STEPS.map((step) => step.key)] as const).map((key) => {
-            const count = key === "all" ? claims.length : claims.filter((claim) => claim.status === key).length;
-            const label = key === "all" ? "All" : statusLabel(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setStatusFilter(key)}
-                aria-pressed={statusFilter === key}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition-colors ${statusFilter === key ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface hover:bg-card"}`}
-              >
-                {label} <span className="ml-1 opacity-70">{count}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {loading ? (
-          <div className="overflow-hidden rounded-xl border border-border bg-surface" aria-label="Loading claims">
-            {[0, 1, 2, 3, 4].map((item) => (
-              <div key={item} className="grid animate-pulse gap-3 border-b border-border px-4 py-4 last:border-0 sm:grid-cols-[1.3fr_2fr_auto]">
-                <span className="h-4 w-32 rounded bg-muted" />
-                <span className="h-4 w-full rounded bg-muted" />
-                <span className="h-4 w-24 rounded bg-muted" />
-              </div>
-            ))}
+          <button onClick={() => scrollTo("notifications")} aria-label="Notifications" className="relative shrink-0 rounded-full p-2 hover:bg-console-bg">
+            <Bell size={18} />
+            {notifications.length > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-console-red" />}
+          </button>
+          <div className="hidden shrink-0 items-center gap-2.5 sm:flex">
+            <Avatar name={staffName} />
+            <div className="leading-tight">
+              <p className="text-sm font-semibold">{staffName}</p>
+              <p className="text-[11px] text-muted-foreground">Staff Member</p>
+            </div>
+            <ChevronDown size={16} className="text-muted-foreground" />
           </div>
-        ) : loadError ? (
-          <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
-            <AlertCircle className="h-5 w-5" />
-            Claims could not be loaded. Refresh the page to try again.
+        </header>
+
+        <main className="px-4 py-6 sm:px-6">
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Overview of customer requests, chats and recent activity.</p>
           </div>
-        ) : filtered.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {claims.length === 0 ? "No claims yet. New ones appear here instantly." : "No claims match these filters."}
-          </p>
-        ) : (
-          <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-surface">
-            {filtered.map((c) => (
-              <li key={c.id}>
-                <button
-                  onClick={() => open(c)}
-                  className={`grid w-full gap-1 px-4 py-3 text-left transition-colors hover:bg-card sm:grid-cols-[1.3fr_2fr_auto] sm:items-center sm:gap-4 ${
-                    openId === c.id ? "bg-card" : ""
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <p className="flex items-center gap-2 truncate text-sm font-medium">
-                      {!c.seen && <span className="h-2 w-2 shrink-0 rounded-full bg-destructive" aria-label="New" />}
-                      {c.customer_name}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {c.email}
-                      {c.phone ? ` · ${c.phone}` : ""}
-                    </p>
+
+          <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+            <MetricCard label="New Requests" value={newCount} icon={<Inbox size={18} />} tone="accent" live />
+            <MetricCard label="Unread Chats" value={unreadChats} icon={<MessageSquare size={18} />} tone="pink" live />
+            <MetricCard label="Under Review" value={underReview} icon={<FileText size={18} />} tone="orange" />
+            <MetricCard label="Being Handled" value={beingHandled} icon={<RefreshCw size={18} />} tone="blue" />
+            <MetricCard label="Update Available" value={updateAvailable} icon={<CheckCircle2 size={18} />} tone="green" />
+            <MetricCard label="Needs Attention" value={needsAttention} icon={<AlertTriangle size={18} />} tone="red" />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="min-w-0 space-y-6">
+              <section id="recent-claims" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
+                <SectionHeader title="Recent Claims">
+                  <select
+                    value={order}
+                    onChange={(e) => setOrder(e.target.value as "newest" | "oldest" | "updated")}
+                    aria-label="Order claims"
+                    className="rounded-lg border border-console-line bg-surface px-2.5 py-1.5 text-xs outline-none focus:border-console-accent"
+                  >
+                    <option value="newest">Newest first</option>
+                    <option value="updated">Recently updated</option>
+                    <option value="oldest">Oldest first</option>
+                  </select>
+                </SectionHeader>
+                <div className="flex gap-2 overflow-x-auto px-5 pb-3" aria-label="Filter claims by progress">
+                  {(["all", ...STATUS_STEPS.map((step) => step.key)] as const).map((key) => {
+                    const count = key === "all" ? claims.length : claims.filter((claim) => claim.status === key).length;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setStatusFilter(key)}
+                        aria-pressed={statusFilter === key}
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs transition-colors ${statusFilter === key ? "bg-console-accent text-console-nav-fg" : "bg-console-bg hover:bg-console-accent-soft"}`}
+                      >
+                        {key === "all" ? "All" : statusLabel(key)} <span className="ml-1 opacity-70">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {loading ? (
+                  <div className="space-y-3 px-5 pb-5" aria-label="Loading claims">
+                    {[0, 1, 2, 3, 4].map((i) => <div key={i} className="h-10 animate-pulse rounded bg-console-bg" />)}
                   </div>
-                  <p className="truncate text-sm text-muted-foreground">{c.description}</p>
-                  <div className="flex items-center gap-3 text-xs sm:justify-end">
-                    <StatusPill status={c.status} />
-                    <span className="font-mono text-muted-foreground">{c.ref}</span>
+                ) : loadError ? (
+                  <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
+                    <AlertCircle className="h-5 w-5" />
+                    Claims could not be loaded. Refresh the page to try again.
                   </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        <p className="mt-3 hidden text-xs text-muted-foreground sm:block">
-          Tip: j / k to move, 1–4 to set status, Esc to close.
-        </p>
-      </main>
+                ) : filtered.length === 0 ? (
+                  <p className="py-16 text-center text-sm text-muted-foreground">
+                    {claims.length === 0 ? "No claims yet. New ones appear here instantly." : "No claims match these filters."}
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[920px] text-left text-sm">
+                      <thead>
+                        <tr className="border-y border-console-line bg-console-bg text-[11px] uppercase tracking-wide text-muted-foreground">
+                          {["Claim ID", "Customer", "Issue Type", "Order No.", "Status", "Submitted", "Last Updated", "Actions"].map((h) => (
+                            <th key={h} className="px-4 py-2.5 font-medium">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map((c) => (
+                          <tr key={c.id} className={`border-b border-console-line last:border-0 transition-colors hover:bg-console-bg ${openId === c.id ? "bg-console-accent-soft" : ""}`}>
+                            <td className="px-4 py-3 font-mono text-xs">
+                              <span className="flex items-center gap-1.5">
+                                {!c.seen && <span className="h-2 w-2 rounded-full bg-console-red" aria-label="New" />}
+                                {c.ref}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <Avatar name={c.customer_name} />
+                                <div className="min-w-0">
+                                  <p className="truncate font-medium">{c.customer_name}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{c.email}</p>
+                                  {c.phone && <p className="truncate text-xs text-muted-foreground">{c.phone}</p>}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="max-w-[220px] px-4 py-3">
+                              <p className="font-medium">{c.category}</p>
+                              <p className="truncate text-xs text-muted-foreground">{c.description}</p>
+                            </td>
+                            <td className="px-4 py-3 text-xs">{c.order_number || "—"}</td>
+                            <td className="px-4 py-3 text-xs"><StatusPill status={c.status} /></td>
+                            <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">{formatDateTime(c.created_at)}</td>
+                            <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">{formatDateTime(c.status_updated_at)}</td>
+                            <td className="px-4 py-3">
+                              <button onClick={() => open(c)} className="rounded-lg border border-console-line px-3 py-1 text-xs font-medium text-console-accent transition hover:bg-console-accent-soft">
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+              <section id="recent-activity" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
+                <SectionHeader title="Recent Activity" />
+                <FeedList items={activities} now={now} empty="No activity yet." />
+              </section>
+            </div>
+
+            <div className="space-y-6">
+              <section className="rounded-xl border border-console-line bg-surface shadow-sm">
+                <SectionHeader title="Live Chats">
+                  <Link to="/chats" className="text-xs font-medium text-console-accent hover:underline">View all</Link>
+                </SectionHeader>
+                {convos.length === 0 ? (
+                  <p className="px-5 pb-5 text-sm text-muted-foreground">No chats yet.</p>
+                ) : (
+                  <ul className="pb-2">
+                    {convos.slice(0, 5).map((c) => (
+                      <li key={c.id}>
+                        <Link to="/chats" className="flex items-center gap-3 px-5 py-2.5 transition hover:bg-console-bg">
+                          <Avatar name={c.customer_name || "Visitor"} />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{c.customer_name || "Anonymous visitor"}</p>
+                            <p className="truncate text-xs text-muted-foreground">{c.last_message || "—"}</p>
+                          </div>
+                          <div className="flex shrink-0 flex-col items-end gap-1">
+                            <span className="text-[11px] text-muted-foreground">{timeAgo(c.last_message_at, now)}</span>
+                            {c.unread_staff > 0 && (
+                              <span className="rounded-full bg-console-accent px-1.5 text-[10px] font-semibold text-console-nav-fg">{c.unread_staff}</span>
+                            )}
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+
+              <section id="notifications" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
+                <SectionHeader title="Notifications" />
+                <FeedList items={notifications} now={now} empty="You're all caught up." />
+              </section>
+
+              <section className="rounded-xl bg-console-nav p-5 text-console-nav-fg">
+                <p className="font-semibold">Need help?</p>
+                <p className="mt-1 text-sm opacity-70">Contact the customer support team</p>
+                <Link to="/chats" className="mt-4 inline-flex text-sm font-medium hover:underline">Open support chat →</Link>
+              </section>
+            </div>
+          </div>
+        </main>
+      </div>
+
 
       {selected && (
         <ClaimDrawer
