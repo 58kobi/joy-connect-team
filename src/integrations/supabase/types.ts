@@ -222,6 +222,7 @@ export type Database = {
           body: string
           created_at: string
           id: string
+          likes: number
           name: string
           rating: number
           title: string | null
@@ -231,6 +232,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          likes?: number
           name: string
           rating: number
           title?: string | null
@@ -240,6 +242,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          likes?: number
           name?: string
           rating?: number
           title?: string | null
@@ -291,6 +294,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      like_review: { Args: { _delta: number; _id: string }; Returns: number }
       like_review_reply: {
         Args: { _delta: number; _id: string }
         Returns: number
