@@ -242,7 +242,6 @@ export function CareChat() {
                 {customerCount === 0 && !pending && <QuickActions onPick={quick} disabled={busy} />}
                 {pending && <Bubble m={{ id: "p", sender: "customer", body: pending, created_at: new Date().toISOString() }} faded />}
                 {busy && pending && !isHuman && <Typing label="Care Assistant is typing…" />}
-                {isHuman && state.status === "active" && !busy && <Typing label="Support specialist is replying…" subtle />}
                 <div ref={endRef} />
               </div>
               {error && <p className="px-4 pb-1 text-xs text-destructive">{error}</p>}
@@ -319,9 +318,9 @@ function Bubble({ m, faded }: { m: PublicMessage; faded?: boolean | undefined })
   );
 }
 
-function Typing({ label, subtle }: { label: string; subtle?: boolean }) {
+function Typing({ label }: { label: string }) {
   return (
-    <div className={`flex items-center gap-2 text-xs text-muted-foreground ${subtle ? "opacity-70" : ""}`}>
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <span className="flex gap-1">
         {[0, 1, 2].map((i) => (
           <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" style={{ animationDelay: `${i * 150}ms` }} />
