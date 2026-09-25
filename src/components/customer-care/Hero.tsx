@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
 
 export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
   const [query, setQuery] = useState("");
