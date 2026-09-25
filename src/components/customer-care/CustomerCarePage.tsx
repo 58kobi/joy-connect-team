@@ -4,7 +4,7 @@ import { Hero } from "./Hero";
 import { Categories } from "./Categories";
 import { FinalCta, Process, WhyUs } from "./Sections";
 import { SupportFaq } from "./SupportFaq";
-import { TrustpilotReviews } from "./TrustpilotReviews";
+import { ReviewsSection } from "./ReviewsSection";
 import { Footer } from "./Footer";
 import { RequestModal } from "./RequestModal";
 import { CareChat } from "./CareChat";
@@ -28,7 +28,7 @@ export function CustomerCarePage() {
       <Navigation />
       <Hero onGetHelp={(query) => openRequest(undefined, query)} />
       <WhyUs />
-      <TrustpilotReviews />
+      <ReviewsSection />
       <Process />
       <Categories onRequest={(category) => openRequest(category)} />
       <SupportFaq onContact={(category) => openRequest(category)} />

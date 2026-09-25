@@ -178,6 +178,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          approved: boolean
+          body: string
+          created_at: string
+          id: string
+          name: string
+          rating: number
+          title: string | null
+        }
+        Insert: {
+          approved?: boolean
+          body: string
+          created_at?: string
+          id?: string
+          name: string
+          rating: number
+          title?: string | null
+        }
+        Update: {
+          approved?: boolean
+          body?: string
+          created_at?: string
+          id?: string
+          name?: string
+          rating?: number
+          title?: string | null
+        }
+        Relationships: []
+      }
       staff_chat_presence: {
         Row: {
           last_seen_at: string
