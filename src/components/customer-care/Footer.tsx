@@ -3,7 +3,6 @@ import logoAsset from "@/assets/debenhams-logo.png.asset.json";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },
-  { label: "Track My Request", href: "#track" },
   { label: "FAQs", href: "#faqs" },
   { label: "Contact Us", href: "#contact" },
 ];

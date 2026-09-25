@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import { Navigation } from "./Navigation";
 import { Hero } from "./Hero";
 import { Categories } from "./Categories";
-import { TrackSection } from "./TrackSection";
 import { FinalCta, Process, WhyUs } from "./Sections";
 import { SupportFaq } from "./SupportFaq";
 import { TrustpilotReviews } from "./TrustpilotReviews";
@@ -23,9 +22,6 @@ export function CustomerCarePage() {
     setModalOpen(true);
   }, []);
 
-  const scrollToTrack = useCallback(() => {
-    document.getElementById("track")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
 
   return (
     <main className="min-h-screen bg-background font-sans text-foreground antialiased">
@@ -35,7 +31,6 @@ export function CustomerCarePage() {
       <TrustpilotReviews />
       <Process />
       <Categories onRequest={(category) => openRequest(category)} />
-      <TrackSection />
       <SupportFaq onContact={(category) => openRequest(category)} />
       <FinalCta onContact={() => openRequest()} />
       <Footer />
@@ -45,7 +40,6 @@ export function CustomerCarePage() {
         initialCategory={presetCategory}
         initialQuery={presetQuery}
         onClose={() => setModalOpen(false)}
-        onTracked={scrollToTrack}
       />
     </main>
   );
