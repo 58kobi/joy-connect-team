@@ -601,6 +601,7 @@ function LeaveAReview({
   const [name, setName] = useState("");
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
+  const [email, setEmail] = useState("");
 
   const [sending, setSending] = useState(false);
 
@@ -609,10 +610,15 @@ function LeaveAReview({
 
     const trimmedName = name.trim();
     const trimmedText = text.trim();
+    const trimmedEmail = email.trim().toLowerCase();
 
-    if (!trimmedName || !trimmedText) return;
+    if (!trimmedName || !trimmedText || !trimmedEmail) return;
     if (trimmedName.length < 2 || trimmedName.length > 80) {
       toast.error("Please enter a name between 2 and 80 characters.");
+      return;
+    }
+    if (trimmedEmail.length > 255 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmedEmail)) {
+      toast.error("Please enter a valid email address.");
       return;
     }
     if (trimmedText.length < 10 || trimmedText.length > 1000) {
@@ -626,16 +632,19 @@ function LeaveAReview({
       .insert({ name: trimmedName, rating, body: trimmedText })
       .select("id,name,rating,body,likes,created_at")
       .single();
-    setSending(false);
     if (error || !data) {
+      setSending(false);
       toast.error("Couldn't submit your review. Please try again.");
       return;
     }
+    await supabase.from("review_emails").insert({ review_id: data.id, email: trimmedEmail });
+    setSending(false);
 
     onSubmit(rowToReview(data));
     toast.success("Thanks for your review!");
 
     setName("");
+    setEmail("");
     setRating(5);
     setText("");
   }
@@ -667,6 +676,26 @@ function LeaveAReview({
             placeholder="Enter your name"
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
           />
+        </div>
+
+        <div>
+          <label htmlFor="review-email" className="mb-1.5 block text-sm font-medium">
+            Your email
+          </label>
+
+          <input
+            id="review-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            maxLength={255}
+            autoComplete="email"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
+          />
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Only visible to our customer care team — never shown publicly.
+          </p>
         </div>
 
         <div>

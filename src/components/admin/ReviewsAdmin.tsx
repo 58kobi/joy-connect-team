@@ -21,6 +21,7 @@ type Row = {
   created_at: string;
   likes: number;
   replies: number;
+  email: string | null;
 };
 
 function fmt(iso: string) {
@@ -38,6 +39,8 @@ export function ReviewsAdmin() {
       supabase.from("reviews").select("id,name,rating,body,created_at,likes").order("created_at", { ascending: false }),
       supabase.from("review_replies").select("review_key"),
     ]);
+    const { data: emails } = await supabase.from("review_emails").select("review_id,email");
+    const emailMap = new Map((emails ?? []).map((e) => [e.review_id, e.email]));
     if (e1 || e2 || !reviews) {
       setError(true);
       return;
@@ -45,7 +48,7 @@ export function ReviewsAdmin() {
     const counts = new Map<string, number>();
     for (const r of replies ?? []) counts.set(r.review_key, (counts.get(r.review_key) ?? 0) + 1);
     setError(false);
-    setRows(reviews.map((r) => ({ ...r, replies: counts.get(r.id) ?? 0 })));
+    setRows(reviews.map((r) => ({ ...r, replies: counts.get(r.id) ?? 0, email: emailMap.get(r.id) ?? null })));
   }
 
   useEffect(() => {
@@ -106,7 +109,14 @@ export function ReviewsAdmin() {
             <tbody className="divide-y divide-console-line">
               {rows.map((r) => (
                 <tr key={r.id} className="align-top">
-                  <td className="px-4 py-3 font-medium text-console-ink">{r.name}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-console-ink">{r.name}</p>
+                    {r.email ? (
+                      <a href={`mailto:${r.email}`} className="text-xs text-console-accent hover:underline break-all">{r.email}</a>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">No email</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span className="inline-flex" aria-label={`${r.rating} out of 5 stars`}>
                       {Array.from({ length: 5 }, (_, i) => (
