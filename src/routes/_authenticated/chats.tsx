@@ -76,7 +76,6 @@ function ChatsPage() {
 
   useEffect(() => {
     if (access !== "yes") return;
-    let alive = true;
     const heartbeat = () => {
       if (document.visibilityState === "visible") updatePresence().catch(() => {});
     };
@@ -117,7 +116,6 @@ function ChatsPage() {
       window.clearInterval(tick);
       window.clearInterval(presenceInterval);
       document.removeEventListener("visibilitychange", heartbeat);
-      alive = false;
     };
   }, [access, updatePresence]);
 
