@@ -22,6 +22,7 @@ import {
   Phone,
   RefreshCw,
   Settings,
+  Star,
   Users,
   X,
 } from "lucide-react";
@@ -31,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ensureAdmin, updateClaim, type ClaimStatus } from "@/lib/claims.functions";
 import { STATUS_STEPS, statusIndex, statusLabel, timeAgo } from "@/lib/claim-status";
 import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
+import { ReviewsAdmin } from "@/components/admin/ReviewsAdmin";
 
 type Convo = {
   id: string;
@@ -307,6 +309,7 @@ function AdminPage() {
           <SidebarLink icon={<MessageSquare size={17} />} label="Live Chats" badge={unreadChats} onClick={() => navigate({ to: "/chats" })} />
           <SidebarLink icon={<Users size={17} />} label="Customers" onClick={() => scrollTo("recent-claims")} />
           <SidebarLink icon={<Package size={17} />} label="Orders" onClick={() => scrollTo("recent-claims")} />
+          <SidebarLink icon={<Star size={17} />} label="Reviews" onClick={() => scrollTo("reviews")} />
           <SidebarLink icon={<Bell size={17} />} label="Notifications" badge={notifications.length} onClick={() => scrollTo("notifications")} />
           <SidebarLink icon={<Activity size={17} />} label="Activity History" onClick={() => scrollTo("recent-activity")} />
           <SidebarLink icon={<Settings size={17} />} label="Settings" onClick={() => toast("Settings are managed by your administrator.")} />
@@ -477,6 +480,8 @@ function AdminPage() {
                   </>
                 )}
               </section>
+
+              <ReviewsAdmin />
 
               <section id="recent-activity" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
                 <SectionHeader title="Recent Activity" />
