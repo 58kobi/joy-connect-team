@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import logoAsset from "@/assets/debenhams-logo.png.asset.json";
 
 const LINKS = [
   { label: "Home", href: "#home" },
@@ -17,9 +18,16 @@ export function Navigation() {
         <a
           href="#home"
           onClick={() => setOpen(false)}
-          className="font-serif text-2xl tracking-tight sm:text-3xl"
+          className="flex items-center"
+          aria-label="Debenhams home"
         >
-          Debenhams
+          <img
+            src={logoAsset.url}
+            alt="Debenhams"
+            width={217}
+            height={40}
+            className="h-8 w-auto sm:h-9"
+          />
         </a>
 
         <nav className="hidden gap-9 text-sm md:flex" aria-label="Primary">

@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import logoAsset from "@/assets/debenhams-logo.png.asset.json";
 
 const NAV_LINKS = [
   { label: "Home", href: "#home" },
@@ -22,7 +23,13 @@ export function Footer() {
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_auto]">
           <div>
-            <p className="font-serif text-3xl tracking-tight">Debenhams</p>
+            <img
+              src={logoAsset.url}
+              alt="Debenhams"
+              width={217}
+              height={40}
+              className="h-9 w-auto"
+            />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-primary-foreground/55">
               Customer care support for orders, delivery, returns, refunds and
               enquiries.
@@ -76,10 +83,6 @@ export function Footer() {
         <div className="mt-12 border-t border-primary-foreground/10 pt-7">
           <p className="text-xs text-primary-foreground/40">
             © 2026 Debenhams Customer Care. All rights reserved.
-          </p>
-          <p className="mt-2 text-xs leading-relaxed text-primary-foreground/35">
-            Independent customer support service. Not operated by or affiliated
-            with Debenhams unless otherwise stated.
           </p>
         </div>
       </div>
