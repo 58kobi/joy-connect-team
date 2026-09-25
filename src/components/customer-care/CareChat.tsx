@@ -67,7 +67,7 @@ export function CareChat() {
         .then((s) => alive && apply(s))
         .catch(() => {});
     tick();
-    const iv = window.setInterval(tick, open ? 2000 : 6000);
+    const iv = window.setInterval(tick, open ? 1200 : 5000);
     return () => {
       alive = false;
       window.clearInterval(iv);
@@ -83,7 +83,7 @@ export function CareChat() {
   }, [visibleCount, open]);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: "end" });
+    endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
   }, [visibleCount, pending, busy, open]);
 
   useEffect(() => {
@@ -170,7 +170,7 @@ export function CareChat() {
         <div
           role="dialog"
           aria-label="Care Assistant"
-          className="fixed inset-0 z-50 flex flex-col bg-background sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[620px] sm:max-h-[calc(100vh-40px)] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl sm:border sm:border-border sm:shadow-2xl"
+          className="fixed inset-x-0 bottom-0 z-50 flex max-h-[55vh] flex-col rounded-t-2xl border border-border bg-background shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[50vh] sm:max-h-[50vh] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl"
         >
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
             <Avatar human={isHuman} inverted />
