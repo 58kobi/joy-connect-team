@@ -214,7 +214,7 @@ function ChatsPage() {
                   <div className="flex items-center gap-2">
                     <span className="truncate text-sm font-medium">{c.customer_name || "Anonymous visitor"}</span>
                     {c.mode === "ai" ? <Bot className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : <Headset className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />}
-                    <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
+                    <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{timeAgo(c.last_message_at, Date.now())}</span>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
                     {[c.email, c.order_number && `#${c.order_number}`].filter(Boolean).join(" · ") || "No details yet"}

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 export type ChatSender = "customer" | "ai" | "staff" | "system" | "note";
 export type ChatStatus = "ai" | "waiting" | "active" | "handled";
@@ -38,14 +39,14 @@ async function addMessage(conversationId: string, sender: ChatSender, body: stri
     .single();
   if (error) throw new Error("Could not save message");
   if (sender !== "note") {
-    const patch: Record<string, unknown> = {
+    const patch: Database["public"]["Tables"]["chat_conversations"]["Update"] = {
       last_message: body.slice(0, 200),
       last_message_at: data.created_at,
       updated_at: data.created_at,
     };
     if (opts?.unread) {
       const { data: c } = await db.from("chat_conversations").select("unread_staff").eq("id", conversationId).single();
-      patch["unread_staff"] = (c?.unread_staff ?? 0) + 1;
+      patch.unread_staff = (c?.unread_staff ?? 0) + 1;
     }
     await db.from("chat_conversations").update(patch).eq("id", conversationId);
   }
@@ -137,14 +138,14 @@ export const sendChatMessage = createServerFn({ method: "POST" })
           order_number: c.order_number,
           issue: c.issue,
         });
-        const patch: Record<string, string> = {};
+        const patch: Database["public"]["Tables"]["chat_conversations"]["Update"] = {};
         for (const k of ["customer_name", "email", "phone", "order_number", "issue"] as const) {
           const v = turn[k]?.trim();
           if (v && v.length <= 200) patch[k] = k === "email" ? v.toLowerCase() : v;
         }
         if (turn.escalate) {
-          patch["mode"] = "human";
-          patch["status"] = "waiting";
+          patch.mode = "human";
+          patch.status = "waiting";
         }
         if (Object.keys(patch).length) await db.from("chat_conversations").update(patch).eq("id", c.id);
         await addMessage(c.id, "ai", turn.reply);
