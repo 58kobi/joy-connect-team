@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2, PackageSearch } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { trackClaim, type ClaimStatus } from "@/lib/claims.functions";
 import { STATUS_STEPS, statusIndex, timeAgo } from "@/lib/claim-status";
 import { formatRequestDate } from "./requests";
