@@ -58,13 +58,6 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
             </button>
           </form>
 
-          <a
-            href="#track"
-            className="mt-6 inline-flex items-center gap-2 text-sm text-primary-foreground/90 transition-colors hover:text-primary-foreground"
-          >
-            Track your order
-            <ArrowRight size={16} />
-          </a>
         </div>
       </div>
     </section>
