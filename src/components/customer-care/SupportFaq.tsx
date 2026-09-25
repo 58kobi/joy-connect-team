@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { EmailForm } from "./EmailForm";
 import {
   ArrowRight,
   Facebook,
@@ -59,6 +60,13 @@ export function SupportFaq({
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [allOpen, setAllOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+
+  const handleRow = (title: string) => {
+    if (title === "Live Chat") window.dispatchEvent(new Event("care-chat:open"));
+    else if (title === "Email Us") setEmailOpen(true);
+    else onContact("General Enquiries");
+  };
 
   return (
     <section
@@ -96,7 +104,7 @@ export function SupportFaq({
               <button
                 key={title}
                 type="button"
-                onClick={() => onContact("General Enquiries")}
+                onClick={() => handleRow(title)}
                 className="group flex w-full items-center justify-between gap-4 py-5 text-left"
               >
                 <div className="flex min-w-0 items-center gap-4">
@@ -177,6 +185,7 @@ export function SupportFaq({
           </button>
         </div>
       </div>
+      {emailOpen && <EmailForm onClose={() => setEmailOpen(false)} />}
     </section>
   );
 }

@@ -34,6 +34,11 @@ export function CareChat() {
   const human = useServerFn(requestHuman);
 
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener("care-chat:open", onOpen);
+    return () => window.removeEventListener("care-chat:open", onOpen);
+  }, []);
   const [token, setToken] = useState<string | null>(null);
   const [state, setState] = useState<State | null>(null);
   const [pending, setPending] = useState<string | null>(null);
