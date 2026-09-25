@@ -21,7 +21,7 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
             DEBENHAMS CUSTOMER CARE
           </p>
 
-          <h1 className="mt-5 font-serif text-5xl leading-[1.02] sm:text-6xl md:text-7xl">
+          <h1 className="mt-5 font-display text-5xl font-normal tracking-[-0.01em] leading-[1.02] sm:text-6xl md:text-7xl">
             Debenhams
             <br />
             Customer Care
