@@ -17,11 +17,7 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
 
       <div className="relative mx-auto flex min-h-[560px] max-w-7xl items-center px-5 py-20 sm:px-6 lg:px-12 lg:py-24">
         <div className="max-w-xl text-primary-foreground">
-          <p className="text-xs tracking-[0.24em] text-primary-foreground/70 sm:text-sm">
-            DEBENHAMS CUSTOMER CARE
-          </p>
-
-          <h1 className="mt-5 font-display text-5xl font-normal tracking-[-0.01em] leading-[1.02] sm:text-6xl md:text-7xl">
+          <h1 className="font-display text-5xl font-normal leading-[0.94] tracking-[-0.025em] sm:text-6xl md:text-7xl lg:text-[76px]">
             Debenhams
             <br />
             Customer Care
