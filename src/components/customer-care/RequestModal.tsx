@@ -126,8 +126,8 @@ export function RequestModal({
               Your request has been received.
             </h3>
             <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              We&rsquo;ll review your request and contact you with the next
-              steps.
+              Please copy or take a screenshot of your reference number below
+              and keep it safe. Quote it when contacting Customer Care.
             </p>
             <div className="mt-6 rounded-lg border border-border bg-card px-5 py-4">
               <p className="text-xs tracking-[0.18em] text-muted-foreground">
