@@ -1,64 +1,99 @@
-import { useState } from "react";
-import { Loader2, PackageSearch } from "lucide-react";
-import {
-  findRequest,
-  formatRequestDate,
-  type SupportRequest,
-} from "./requests";
+import { useEffect, useState } from "react";
+import { Check, Loader2, PackageSearch } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { trackClaim, type ClaimStatus } from "@/lib/claims.functions";
+import { STATUS_STEPS, statusIndex, timeAgo } from "@/lib/claim-status";
+import { formatRequestDate } from "./requests";
 
 type Status = "idle" | "loading" | "success" | "error";
+type Result = {
+  ref: string;
+  category: string;
+  createdAt: string;
+  token: string;
+  status: ClaimStatus;
+  statusUpdatedAt: string;
+  reply: string | null;
+};
 
 export function TrackSection() {
   const [reference, setReference] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
-  const [result, setResult] = useState<SupportRequest | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const track = useServerFn(trackClaim);
 
-  function handleSubmit(e: React.FormEvent) {
+  // Live updates: realtime subscription + lightweight polling fallback.
+  const token = result?.token;
+  useEffect(() => {
+    if (!token) return;
+    const apply = (row: { status: ClaimStatus; status_updated_at: string; reply: string | null }) =>
+      setResult((r) =>
+        r && (r.statusUpdatedAt !== row.status_updated_at || r.status !== row.status)
+          ? { ...r, status: row.status, statusUpdatedAt: row.status_updated_at, reply: row.reply }
+          : r,
+      );
+    const channel = supabase
+      .channel(`track-${token}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "claim_tracking", filter: `token=eq.${token}` },
+        (payload) => apply(payload.new as never),
+      )
+      .subscribe();
+    const poll = window.setInterval(async () => {
+      const { data } = await supabase
+        .from("claim_tracking")
+        .select("status, status_updated_at, reply")
+        .eq("token", token)
+        .maybeSingle();
+      if (data) apply(data as never);
+    }, 15000);
+    const tick = window.setInterval(() => setNow(Date.now()), 20000);
+    return () => {
+      supabase.removeChannel(channel);
+      window.clearInterval(poll);
+      window.clearInterval(tick);
+    };
+  }, [token]);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "loading") return;
     setStatus("loading");
     setResult(null);
-    window.setTimeout(() => {
-      const found = findRequest(reference, email);
+    try {
+      const found = await track({ data: { ref: reference, email } });
       if (found) {
-        setResult(found);
+        setResult(found as Result);
+        setNow(Date.now());
         setStatus("success");
-      } else {
-        setStatus("error");
-      }
-    }, 1200);
+      } else setStatus("error");
+    } catch {
+      setStatus("error");
+    }
   }
 
+  const current = result ? statusIndex(result.status) : 0;
+
   return (
-    <section
-      id="track"
-      className="border-y border-border bg-cream px-5 py-16 sm:px-6 lg:px-12 lg:py-24"
-    >
+    <section id="track" className="border-y border-border bg-cream px-5 py-16 sm:px-6 lg:px-12 lg:py-24">
       <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div>
-          <p className="text-xs tracking-[0.22em] text-muted-foreground sm:text-sm">
-            TRACK MY REQUEST
-          </p>
-          <h2 className="mt-3 font-serif text-3xl sm:text-4xl lg:text-5xl">
-            Track your request
-          </h2>
+          <p className="text-xs tracking-[0.22em] text-muted-foreground sm:text-sm">TRACK MY REQUEST</p>
+          <h2 className="mt-3 font-serif text-3xl sm:text-4xl lg:text-5xl">Track your request</h2>
           <p className="mt-5 max-w-md leading-relaxed text-muted-foreground">
-            Enter the support reference number we gave you, along with the
-            email address you used when submitting your request, and we&rsquo;ll
-            check its status.
+            Enter the support reference number we gave you, along with the email address you used when
+            submitting your request. Progress updates appear here automatically.
           </p>
         </div>
 
         <div className="rounded-xl border border-border bg-surface p-6 sm:p-8">
           <form className="grid gap-4" onSubmit={handleSubmit} noValidate>
             <div className="grid gap-1.5">
-              <label
-                htmlFor="track-reference"
-                className="text-sm font-medium"
-              >
-                Support reference number
-              </label>
+              <label htmlFor="track-reference" className="text-sm font-medium">Support reference number</label>
               <input
                 id="track-reference"
                 type="text"
@@ -68,11 +103,8 @@ export function TrackSection() {
                 className="w-full rounded-lg border border-input bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             </div>
-
             <div className="grid gap-1.5">
-              <label htmlFor="track-email" className="text-sm font-medium">
-                Email address
-              </label>
+              <label htmlFor="track-email" className="text-sm font-medium">Email address</label>
               <input
                 id="track-email"
                 type="email"
@@ -82,7 +114,6 @@ export function TrackSection() {
                 className="w-full rounded-lg border border-input bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
               />
             </div>
-
             <button
               type="submit"
               disabled={status === "loading"}
@@ -110,18 +141,55 @@ export function TrackSection() {
             {status === "success" && result && (
               <div className="rounded-lg border border-border bg-card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-serif text-lg tracking-wide">
-                    {result.ref}
-                  </p>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium">
-                    <span
-                      className="h-1.5 w-1.5 rounded-full bg-coffee"
-                      aria-hidden
-                    />
-                    Received — under review
+                  <p className="font-serif text-lg tracking-wide">{result.ref}</p>
+                  <span className="text-xs text-muted-foreground">
+                    Last updated {timeAgo(result.statusUpdatedAt, now)}
                   </span>
                 </div>
-                <dl className="mt-4 grid gap-2 text-sm">
+
+                <ol className="relative mt-5 grid gap-4">
+                  <span className="absolute left-[11px] top-3 bottom-3 w-px bg-border" aria-hidden />
+                  <span
+                    className="absolute left-[11px] top-3 w-px bg-coffee transition-all duration-700 ease-out"
+                    style={{ height: `calc(${(current / (STATUS_STEPS.length - 1)) * 100}% - 1.5rem)` }}
+                    aria-hidden
+                  />
+                  {STATUS_STEPS.map((step, i) => {
+                    const done = i < current;
+                    const active = i === current;
+                    return (
+                      <li key={step.key} className="relative flex items-center gap-3 text-sm">
+                        <span
+                          className={`z-10 flex h-6 w-6 items-center justify-center rounded-full border transition-all duration-500 ${
+                            done
+                              ? "border-coffee bg-coffee text-primary-foreground"
+                              : active
+                                ? "border-coffee bg-surface"
+                                : "border-border bg-surface"
+                          }`}
+                        >
+                          {done ? (
+                            <Check size={13} strokeWidth={2.5} aria-hidden />
+                          ) : active ? (
+                            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-coffee" />
+                          ) : null}
+                        </span>
+                        <span className={active ? "font-medium" : done ? "" : "text-muted-foreground"}>
+                          {step.customer}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+
+                {result.reply && (
+                  <div className="mt-5 rounded-md border border-border bg-surface p-4 text-sm">
+                    <p className="text-xs tracking-[0.18em] text-muted-foreground">MESSAGE FROM OUR TEAM</p>
+                    <p className="mt-2 whitespace-pre-line leading-relaxed">{result.reply}</p>
+                  </div>
+                )}
+
+                <dl className="mt-5 grid gap-2 border-t border-border pt-4 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-muted-foreground">Category</dt>
                     <dd>{result.category}</dd>
@@ -130,25 +198,15 @@ export function TrackSection() {
                     <dt className="text-muted-foreground">Submitted</dt>
                     <dd>{formatRequestDate(result.createdAt)}</dd>
                   </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd className="truncate">{result.email}</dd>
-                  </div>
                 </dl>
               </div>
             )}
 
             {status === "error" && (
-              <div
-                className="rounded-lg border border-destructive/30 bg-surface p-5 text-sm"
-                role="alert"
-              >
-                <p className="font-medium text-destructive">
-                  We couldn&rsquo;t find a request with those details.
-                </p>
+              <div className="rounded-lg border border-destructive/30 bg-surface p-5 text-sm" role="alert">
+                <p className="font-medium text-destructive">We couldn&rsquo;t find a request with those details.</p>
                 <p className="mt-1.5 leading-relaxed text-muted-foreground">
-                  Check your reference number and email address, or contact us
-                  and we&rsquo;ll help you find it.
+                  Check your reference number and email address, or contact us and we&rsquo;ll help you find it.
                 </p>
               </div>
             )}
