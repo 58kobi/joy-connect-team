@@ -29,13 +29,6 @@
       "when": 1790300534526,
       "tag": "0003_add_staff_chat_presence",
       "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1790305990973,
-      "tag": "0004_create_reviews",
-      "breakpoints": true
     }
   ]
 }
