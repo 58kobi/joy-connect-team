@@ -80,10 +80,16 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-primary-foreground/10 pt-7">
+        <div className="mt-12 flex items-center justify-between border-t border-primary-foreground/10 pt-7">
           <p className="text-xs text-primary-foreground/40">
             © 2026 Debenhams Customer Care. All rights reserved.
           </p>
+          <a
+            href="/auth"
+            className="text-[11px] text-primary-foreground/25 transition-colors hover:text-primary-foreground/60"
+          >
+            Staff Console
+          </a>
         </div>
       </div>
     </footer>
