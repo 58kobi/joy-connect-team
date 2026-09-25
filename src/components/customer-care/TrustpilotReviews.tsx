@@ -458,10 +458,6 @@ export function TrustpilotReviews() {
               4.7 out of 5
             </span>
           </div>
-
-          <p className="mt-2 text-sm text-muted-foreground">
-            Based on {reviews.length} customer reviews
-          </p>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
