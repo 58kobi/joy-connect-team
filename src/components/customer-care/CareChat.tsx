@@ -222,8 +222,9 @@ export function CareChat() {
           </header>
 
           {!state ? (
-            <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6">
-              <h2 className="font-serif text-2xl">How can we help today?</h2>
+            <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6 sm:px-6">
+              <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+              <h2 className="font-serif text-2xl sm:text-3xl">How can we help today?</h2>
               <p className="mt-1 text-sm text-muted-foreground">Choose how you&rsquo;d like to continue:</p>
               <div className="mt-5 space-y-3">
                 <ChoiceButton icon={<Bot className="h-5 w-5" />} label="Get help with Care Assistant" hint="Instant answers to common questions" onClick={() => begin("ai")} disabled={busy} />
