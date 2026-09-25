@@ -255,3 +255,11 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+@media (max-width: 768px) {
+  .staff-console {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+}
