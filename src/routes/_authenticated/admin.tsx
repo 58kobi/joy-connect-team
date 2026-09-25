@@ -579,9 +579,9 @@ const TONES = {
 
 function MetricCard({ label, value, icon, tone, live }: { label: string; value: number; icon: ReactNode; tone: keyof typeof TONES; live?: boolean | undefined }) {
   return (
-    <div className="rounded-xl border border-console-line bg-surface p-4 shadow-sm">
+    <div className="min-w-0 rounded-xl border border-console-line bg-surface p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <span className={`grid h-9 w-9 place-items-center rounded-lg ${TONES[tone]}`}>{icon}</span>
+        <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${TONES[tone]}`}>{icon}</span>
         {live && (
           <span className="flex items-center gap-1 text-[10px] font-medium text-console-green">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-console-green" /> Live
@@ -589,14 +589,14 @@ function MetricCard({ label, value, icon, tone, live }: { label: string; value: 
         )}
       </div>
       <p className="mt-3 text-2xl font-semibold">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="break-words text-xs text-muted-foreground">{label}</p>
     </div>
   );
 }
 
 function SectionHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-5 py-4">
+    <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 px-4 py-4 sm:px-5">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </div>
