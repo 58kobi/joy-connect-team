@@ -45,7 +45,6 @@ export function CareChat() {
   const seenCount = useRef(0);
   const previousVisibleCount = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const t = window.localStorage.getItem(KEY);
@@ -119,9 +118,6 @@ export function CareChat() {
     previousVisibleCount.current = visibleCount;
   }, [visibleCount, pending, busy, open]);
 
-  useEffect(() => {
-    if (open && state && !busy) inputRef.current?.focus();
-  }, [open, state, busy]);
 
   async function begin(mode: "ai" | "human", firstMessage?: string) {
     setBusy(true);
@@ -204,9 +200,9 @@ export function CareChat() {
         <div
           role="dialog"
           aria-label="Care Assistant"
-          className="animate-panel-up fixed inset-x-0 bottom-0 z-50 flex max-h-[55vh] flex-col rounded-t-2xl border border-border bg-background shadow-2xl sm:inset-x-auto sm:bottom-5 sm:right-5 sm:h-[50vh] sm:max-h-[50vh] sm:w-[390px] sm:overflow-hidden sm:rounded-2xl"
+          className="animate-soft-enter fixed inset-0 z-50 flex flex-col bg-background"
         >
-          <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
+          <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground shadow-md sm:px-6">
             <Avatar human={isHuman} inverted />
             <div className="min-w-0 flex-1">
               <p className="font-serif text-base leading-tight">Care Assistant</p>
@@ -226,8 +222,9 @@ export function CareChat() {
           </header>
 
           {!state ? (
-            <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6">
-              <h2 className="font-serif text-2xl">How can we help today?</h2>
+            <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6 sm:px-6">
+              <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
+              <h2 className="font-serif text-2xl sm:text-3xl">How can we help today?</h2>
               <p className="mt-1 text-sm text-muted-foreground">Choose how you&rsquo;d like to continue:</p>
               <div className="mt-5 space-y-3">
                 <ChoiceButton icon={<Bot className="h-5 w-5" />} label="Get help with Care Assistant" hint="Instant answers to common questions" onClick={() => begin("ai")} disabled={busy} />
@@ -247,10 +244,12 @@ export function CareChat() {
               <p className="mt-auto pt-6 text-[11px] leading-relaxed text-muted-foreground">
                 Independent customer support service. Never share passwords, card numbers or security codes in chat.
               </p>
+              </div>
             </div>
           ) : (
             <>
-              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+              <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:px-6">
+                <div className="mx-auto w-full max-w-2xl space-y-3">
                 {state.messages.map((m) => (
                   <Bubble key={m.id} m={m} />
                 ))}
@@ -258,6 +257,7 @@ export function CareChat() {
                 {pending && <Bubble m={{ id: "p", sender: "customer", body: pending, created_at: new Date().toISOString() }} faded />}
                 {busy && pending && !isHuman && <Typing label="Care Assistant is typing…" />}
                 <div ref={endRef} />
+                </div>
               </div>
               {error && <p className="px-4 pb-1 text-xs text-destructive">{error}</p>}
               {!isHuman && customerCount > 0 && (
@@ -270,10 +270,9 @@ export function CareChat() {
                   e.preventDefault();
                   submit(input);
                 }}
-                className="flex items-end gap-2 border-t border-border p-3"
+                className="flex items-end gap-2 border-t border-border bg-card/60 p-3 backdrop-blur sm:px-6"
               >
                 <textarea
-                  ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
