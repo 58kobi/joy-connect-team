@@ -1,12 +1,53 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertCircle, Loader2, LogOut, Mail, Phone, Search, X } from "lucide-react";
+import {
+  Activity,
+  AlertCircle,
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  ClipboardList,
+  Clock,
+  FileText,
+  Inbox,
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  Mail,
+  Menu,
+  MessageSquare,
+  Package,
+  Phone,
+  RefreshCw,
+  Search,
+  Settings,
+  Users,
+  X,
+} from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ensureAdmin, updateClaim, type ClaimStatus } from "@/lib/claims.functions";
 import { STATUS_STEPS, statusIndex, statusLabel, timeAgo } from "@/lib/claim-status";
+import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
+
+type Convo = {
+  id: string;
+  customer_name: string | null;
+  email: string | null;
+  last_message: string | null;
+  last_message_at: string;
+  unread_staff: number;
+  status: string;
+};
+
+type Feed = { id: string; kind: "new" | "chat" | "status" | "reply" | "note"; title: string; subtitle: string; at: string };
+
+function formatDateTime(iso: string) {
+  return new Date(iso).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -57,10 +98,40 @@ function AdminPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | ClaimStatus>("all");
   const [order, setOrder] = useState<"newest" | "oldest" | "updated">("newest");
   const [now, setNow] = useState(() => Date.now());
+  const [convos, setConvos] = useState<Convo[]>([]);
+  const [staffName, setStaffName] = useState("Staff");
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     checkAdmin().then((r) => setAccess(r.isAdmin ? "yes" : "no")).catch(() => setAccess("no"));
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      const n = (u?.user_metadata?.["full_name"] as string | undefined) || u?.email?.split("@")[0];
+      if (n) setStaffName(n.charAt(0).toUpperCase() + n.slice(1));
+    });
   }, [checkAdmin]);
+
+  useEffect(() => {
+    if (access !== "yes") return;
+    const cols = "id, customer_name, email, last_message, last_message_at, unread_staff, status";
+    supabase
+      .from("chat_conversations")
+      .select(cols)
+      .order("last_message_at", { ascending: false })
+      .limit(50)
+      .then(({ data }) => setConvos((data as Convo[]) ?? []));
+    const ch = supabase
+      .channel("admin-chats")
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_conversations" }, (p) => {
+        const c = p.new as Convo;
+        if (!c?.id) return;
+        setConvos((l) => [c, ...l.filter((x) => x.id !== c.id)].sort((a, b) => b.last_message_at.localeCompare(a.last_message_at)));
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, [access]);
 
   useEffect(() => {
     if (access !== "yes") return;
@@ -138,6 +209,35 @@ function AdminPage() {
 
   const newCount = claims.filter((c) => !c.seen).length;
   const selected = claims.find((c) => c.id === openId) ?? null;
+  const unreadChats = convos.reduce((n, c) => n + (c.unread_staff > 0 ? 1 : 0), 0);
+  const underReview = claims.filter((c) => c.status === "under_review").length;
+  const beingHandled = claims.filter((c) => c.status === "being_handled").length;
+  const updateAvailable = claims.filter((c) => c.status === "update_available").length;
+  const needsAttention = claims.filter(
+    (c) => c.status !== "update_available" && now - new Date(c.status_updated_at).getTime() > 48 * 3600 * 1000,
+  ).length;
+
+  const notifications: Feed[] = useMemo(() => {
+    const list: Feed[] = [
+      ...claims.filter((c) => !c.seen).map((c) => ({
+        id: `n-${c.id}`, kind: "new" as const, title: `New request ${c.ref}`, subtitle: `${c.customer_name} · ${c.category}`, at: c.created_at,
+      })),
+      ...convos.filter((c) => c.unread_staff > 0).map((c) => ({
+        id: `c-${c.id}`, kind: "chat" as const, title: `${c.unread_staff} unread message${c.unread_staff > 1 ? "s" : ""}`, subtitle: c.customer_name || "Anonymous visitor", at: c.last_message_at,
+      })),
+    ];
+    return list.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 5);
+  }, [claims, convos]);
+
+  const activities: Feed[] = useMemo(() => {
+    const list: Feed[] = claims.flatMap((c) => {
+      const items: Feed[] = [{ id: `a-new-${c.id}`, kind: "new", title: `Request ${c.ref} submitted`, subtitle: c.customer_name, at: c.created_at }];
+      if (c.status_updated_at !== c.created_at && c.status !== "received")
+        items.push({ id: `a-st-${c.id}`, kind: c.reply ? "reply" : "status", title: `${c.ref} moved to ${statusLabel(c.status)}`, subtitle: c.customer_name, at: c.status_updated_at });
+      return items;
+    });
+    return list.sort((a, b) => b.at.localeCompare(a.at)).slice(0, 6);
+  }, [claims]);
 
   // Keyboard: j/k to move, Enter to open, Esc to close, 1-4 to set status.
   useEffect(() => {
