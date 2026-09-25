@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, LogOut, Mail, Phone, Search, X } from "lucide-react";
@@ -178,6 +178,9 @@ function AdminPage() {
       <header className="sticky top-0 z-20 border-b border-border bg-primary text-primary-foreground">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
           <p className="font-serif text-lg tracking-wide">Claims</p>
+          <Link to="/chats" className="rounded-full border border-primary-foreground/30 px-3 py-1 text-xs hover:bg-coffee">
+            Live Chats
+          </Link>
           {newCount > 0 && (
             <span className="rounded-full bg-primary-foreground px-2 py-0.5 text-xs font-medium text-primary">
               {newCount} new

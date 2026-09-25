@@ -8,6 +8,7 @@ import { SupportFaq } from "./SupportFaq";
 import { TrustpilotReviews } from "./TrustpilotReviews";
 import { Footer } from "./Footer";
 import { RequestModal } from "./RequestModal";
+import { CareChat } from "./CareChat";
 
 export function CustomerCarePage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,6 +39,7 @@ export function CustomerCarePage() {
       <SupportFaq onContact={(category) => openRequest(category)} />
       <FinalCta onContact={() => openRequest()} />
       <Footer />
+      <CareChat />
       <RequestModal
         open={modalOpen}
         initialCategory={presetCategory}

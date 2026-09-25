@@ -15,6 +15,13 @@
       "when": 1790295299353,
       "tag": "0001_lock_claim_tracking_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790295913759,
+      "tag": "0002_live_chat",
+      "breakpoints": true
     }
   ]
 }

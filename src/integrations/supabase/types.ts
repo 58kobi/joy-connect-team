@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_conversations: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          customer_name: string | null
+          email: string | null
+          id: string
+          issue: string | null
+          last_message: string | null
+          last_message_at: string
+          mode: string
+          order_number: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["chat_status"]
+          token: string
+          unread_staff: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          issue?: string | null
+          last_message?: string | null
+          last_message_at?: string
+          mode?: string
+          order_number?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["chat_status"]
+          token: string
+          unread_staff?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          customer_name?: string | null
+          email?: string | null
+          id?: string
+          issue?: string | null
+          last_message?: string | null
+          last_message_at?: string
+          mode?: string
+          order_number?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["chat_status"]
+          token?: string
+          unread_staff?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender: Database["public"]["Enums"]["chat_sender"]
+          staff_id: string | null
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender: Database["public"]["Enums"]["chat_sender"]
+          staff_id?: string | null
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender?: Database["public"]["Enums"]["chat_sender"]
+          staff_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       claim_tracking: {
         Row: {
           reply: string | null
@@ -122,6 +211,8 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "staff"
+      chat_sender: "customer" | "ai" | "staff" | "system" | "note"
+      chat_status: "ai" | "waiting" | "active" | "handled"
       claim_status:
         | "received"
         | "under_review"
@@ -255,6 +346,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "staff"],
+      chat_sender: ["customer", "ai", "staff", "system", "note"],
+      chat_status: ["ai", "waiting", "active", "handled"],
       claim_status: [
         "received",
         "under_review",
