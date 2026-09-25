@@ -361,6 +361,7 @@ function ClaimDrawer({
   const [note, setNote] = useState(claim.internal_note ?? "");
   const [saving, setSaving] = useState<"" | "reply" | "note">("");
   const current = statusIndex(claim.status);
+  const progressWidth = ["w-1/4", "w-1/2", "w-3/4", "w-full"][current] ?? "w-1/4";
   const area =
     "w-full resize-none rounded-lg border border-input bg-surface px-3 py-2 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30";
 
@@ -401,7 +402,7 @@ function ClaimDrawer({
             ))}
           </div>
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-label={`Claim progress: step ${current + 1} of ${STATUS_STEPS.length}`}>
-            <div className="h-full rounded-full bg-trustpilot transition-[width] duration-300" style={{ width: `${((current + 1) / STATUS_STEPS.length) * 100}%` }} />
+            <div className={`h-full rounded-full bg-trustpilot transition-[width] duration-300 ${progressWidth}`} />
           </div>
         </section>
 

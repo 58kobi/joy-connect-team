@@ -14,7 +14,7 @@ import {
 const FAQS = [
   {
     q: "How do I track my order?",
-    a: "Enter your order number in the search field at the top of the page, or use the Track My Request section with your support reference number. You can also contact our team and we'll check the status for you.",
+    a: "Enter your order number in the help field at the top of the page or contact our team, and we'll help check the latest status for you.",
   },
   {
     q: "Can I change or cancel my order?",
