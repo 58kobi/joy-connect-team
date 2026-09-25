@@ -150,11 +150,14 @@ export function SupportFaq({
                       }
                     />
                   </button>
-                  {open && (
-                    <p className="pb-5 text-sm leading-relaxed text-muted-foreground">
-                      {faq.a}
-                    </p>
-                  )}
+                  <div
+                    className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+                    aria-hidden={!open}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="pb-5 text-sm leading-relaxed text-muted-foreground">{faq.a}</p>
+                    </div>
+                  </div>
                 </div>
               );
             })}

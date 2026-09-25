@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,6 +31,9 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => emailRef.current?.focus(), []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,11 +49,11 @@ function AuthPage() {
     setBusy(false);
 
     if (error) {
-      setMsg(error.message);
+      setMsg("The email or password is incorrect. Please try again.");
       return;
     }
 
-    navigate({ to: "/admin" });
+    navigate({ to: "/admin", replace: true });
   }
 
   const field =
@@ -58,7 +61,7 @@ function AuthPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-5">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-7">
+      <div className="animate-soft-enter w-full max-w-sm rounded-xl border border-border bg-surface p-7 shadow-sm">
         <p className="text-xs tracking-[0.22em] text-muted-foreground">
           STAFF ONLY
         </p>
@@ -69,6 +72,7 @@ function AuthPage() {
 
         <form onSubmit={onSubmit} className="mt-6 grid gap-3">
           <input
+            ref={emailRef}
             className={field}
             type="email"
             required
@@ -76,6 +80,7 @@ function AuthPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            aria-label="Staff email"
           />
 
           <input
@@ -86,6 +91,7 @@ function AuthPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            aria-label="Password"
           />
 
           {msg && (
@@ -96,11 +102,11 @@ function AuthPage() {
 
           <button
             type="submit"
-            disabled={busy}
+            disabled={busy || !email.trim() || !password}
             className="mt-1 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-coffee disabled:opacity-70"
           >
             {busy && <Loader2 size={16} className="animate-spin" />}
-            Sign in
+            {busy ? "Signing in…" : "Sign in"}
           </button>
         </form>
       </div>
