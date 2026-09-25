@@ -94,12 +94,24 @@ export function CareChat() {
   }, [open, getAvailability]);
 
   const visibleCount = state?.messages.length ?? 0;
+  // Unread = replies from the assistant/staff that arrived after the last one the customer saw.
+  // Remembered across reloads so already-read messages never re-trigger the badge.
   useEffect(() => {
+    const msgs = state?.messages ?? [];
+    const incoming = msgs.filter((m) => m.sender === "ai" || m.sender === "staff");
+    const readKey = `${KEY}:read`;
     if (open) {
+      const last = incoming[incoming.length - 1];
+      if (last) window.localStorage.setItem(readKey, last.created_at);
       seenCount.current = visibleCount;
       setUnread(0);
-    } else if (visibleCount > seenCount.current) setUnread(visibleCount - seenCount.current);
-  }, [visibleCount, open]);
+      return;
+    }
+    const lastRead = window.localStorage.getItem(readKey);
+    const count = lastRead ? incoming.filter((m) => m.created_at > lastRead).length : 0;
+    if (!lastRead && incoming.length) window.localStorage.setItem(readKey, incoming[incoming.length - 1]!.created_at);
+    setUnread(count);
+  }, [state, visibleCount, open]);
 
   useEffect(() => {
     const hasNewMessage = visibleCount > previousVisibleCount.current;
