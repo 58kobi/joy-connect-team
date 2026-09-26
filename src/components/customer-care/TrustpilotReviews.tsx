@@ -776,7 +776,9 @@ function rowToReview(r: ReviewRow): Review {
 
 export function TrustpilotReviews() {
   const [saved, setSaved] = useState<Review[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const reviews = [...saved, ...INITIAL_REVIEWS];
+  const visibleReviews = showAll ? reviews : reviews.slice(0, 4);
 
   useEffect(() => {
     supabase
@@ -823,7 +825,7 @@ export function TrustpilotReviews() {
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {reviews.map((review, index) => (
+          {visibleReviews.map((review, index) => (
             <ReviewCard
               key={review.dbId ?? `${review.name}-${index}`}
               review={review}
@@ -831,6 +833,19 @@ export function TrustpilotReviews() {
             />
           ))}
         </div>
+
+        {reviews.length > 4 && (
+          <div className="mt-8 text-center">
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              aria-expanded={showAll}
+              className="text-sm font-medium underline-offset-4 hover:underline"
+            >
+              {showAll ? "Show fewer reviews" : `See more reviews (${reviews.length - 4})`}
+            </button>
+          </div>
+        )}
 
         <LeaveAReview onSubmit={addReview} />
 
