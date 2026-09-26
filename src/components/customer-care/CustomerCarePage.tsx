@@ -32,7 +32,7 @@ export function CustomerCarePage() {
       <Process />
       <Categories onRequest={(category) => openRequest(category)} />
       <SupportFaq onContact={(category) => openRequest(category)} />
-      <FinalCta onContact={() => openRequest()} />
+      <FinalCta />
       <Footer />
       <CareChat />
       <RequestModal

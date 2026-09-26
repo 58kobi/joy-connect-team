@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
-import { ArrowRight, Clock, Heart, HeartHandshake, ShieldCheck } from "lucide-react";
+import { ArrowRight, Clock, Heart, HeartHandshake, Mail, MessageCircle, ShieldCheck, X } from "lucide-react";
+import { EmailForm } from "./EmailForm";
 
 const STEPS = [
   {
@@ -125,7 +126,10 @@ export function WhyUs() {
   );
 }
 
-export function FinalCta({ onContact }: { onContact: () => void }) {
+export function FinalCta() {
+  const [open, setOpen] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+
   return (
     <section className="bg-coffee px-5 py-20 text-center text-primary-foreground sm:px-6 lg:px-12">
       <h2 className="font-serif text-4xl sm:text-5xl">Need more help?</h2>
@@ -135,7 +139,7 @@ export function FinalCta({ onContact }: { onContact: () => void }) {
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={onContact}
+          onClick={() => setOpen(true)}
           className="w-full max-w-xs rounded-full bg-surface px-8 py-3.5 text-sm font-medium text-foreground transition-colors hover:bg-card sm:w-auto"
         >
           <span className="inline-flex items-center justify-center gap-2">
@@ -144,6 +148,80 @@ export function FinalCta({ onContact }: { onContact: () => void }) {
           </span>
         </button>
       </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 sm:items-center sm:p-4"
+          onClick={() => setOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="contact-us-title"
+            onClick={(e) => e.stopPropagation()}
+            className="animate-panel-up w-full rounded-t-2xl bg-surface p-6 text-left text-foreground shadow-xl sm:max-w-md sm:rounded-2xl"
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2 id="contact-us-title" className="font-serif text-2xl">
+                  Contact us
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Choose how you'd like to reach our team.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="rounded-full p-2 hover:bg-card"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="divide-y divide-border border-y border-border">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  window.open("https://wa.me/447454742785", "_blank", "noopener,noreferrer");
+                }}
+                className="group flex w-full items-center justify-between gap-4 py-5 text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <MessageCircle size={21} strokeWidth={1.5} aria-hidden className="shrink-0" />
+                  <div>
+                    <p className="font-medium">WhatsApp</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">+44 7454 742785</p>
+                  </div>
+                </div>
+                <ArrowRight size={17} aria-hidden className="shrink-0 transition-transform group-hover:translate-x-1" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setEmailOpen(true);
+                }}
+                className="group flex w-full items-center justify-between gap-4 py-5 text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <Mail size={21} strokeWidth={1.5} aria-hidden className="shrink-0" />
+                  <div>
+                    <p className="font-medium">Email us</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">info@debenhamscare.uk</p>
+                  </div>
+                </div>
+                <ArrowRight size={17} aria-hidden className="shrink-0 transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {emailOpen && <EmailForm onClose={() => setEmailOpen(false)} />}
     </section>
   );
 }
