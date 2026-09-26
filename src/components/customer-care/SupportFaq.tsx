@@ -44,7 +44,12 @@ const CONTACT_ROWS = [
   {
     icon: Mail,
     title: "Email Us",
-    text: "We'll respond within 24 hours.",
+    text: "info@debenhamscare.uk",
+  },
+  {
+    icon: MessageCircle,
+    title: "WhatsApp",
+    text: "+44 7454 742785",
   },
   {
     icon: Phone,
@@ -65,6 +70,8 @@ export function SupportFaq({
   const handleRow = (title: string) => {
     if (title === "Live Chat") window.dispatchEvent(new Event("care-chat:open"));
     else if (title === "Email Us") setEmailOpen(true);
+    else if (title === "WhatsApp")
+      window.open("https://wa.me/447454742785", "_blank", "noopener,noreferrer");
     else onContact("General Enquiries");
   };
 

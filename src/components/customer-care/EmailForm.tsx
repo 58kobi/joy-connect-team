@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { z } from "zod";
+import { sendSupportEmail } from "@/lib/email.functions";
 
-// Business email address — add it here when available.
-const SUPPORT_EMAIL = "";
+const SUPPORT_EMAIL = "info@debenhamscare.uk";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Please enter your full name").max(100),
@@ -19,6 +19,7 @@ const field =
 export function EmailForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<"sent" | "not-connected" | null>(null);
+  const [sending, setSending] = useState(false);
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,12 +30,20 @@ export function EmailForm({ onClose }: { onClose: () => void }) {
       return;
     }
     setError(null);
-    // TODO: Connect this form to the business email service when SUPPORT_EMAIL is provided.
     if (!SUPPORT_EMAIL) {
       setResult("not-connected");
       return;
     }
-    setResult("sent");
+    setSending(true);
+    try {
+      const res = await sendSupportEmail({ data: { ...parsed.data, order: parsed.data.order || undefined } });
+      if (res.ok) setResult("sent");
+      else setError("Sorry, we couldn't send your email right now. Please try again or use Live Chat.");
+    } catch {
+      setError("Sorry, we couldn't send your email right now. Please try again or use Live Chat.");
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -92,8 +101,8 @@ export function EmailForm({ onClose }: { onClose: () => void }) {
               <textarea name="message" rows={5} className={`${field} resize-none`} />
             </label>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <button type="submit" className="w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90">
-              Send Email
+            <button type="submit" disabled={sending} className="w-full rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60">
+              {sending ? "Sending…" : "Send Email"}
             </button>
           </form>
         )}
