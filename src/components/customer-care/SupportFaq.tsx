@@ -14,7 +14,11 @@ import {
 
 const FAQS = [
   {
-    q: "How do I track my order?",
+    q: "How can I contact Debenhams customer services?",
+    a: "You can reach our independent customer care team by live chat, WhatsApp on +44 7454 742785, or email at info@debenhamscare.uk, Monday to Friday, 9am – 6pm. Choose any contact option on this page and we'll be happy to help.",
+  },
+  {
+    q: "How do I track my Debenhams order?",
     a: "Enter your order number in the help field at the top of the page or contact our team, and we'll help check the latest status for you.",
   },
   {
@@ -22,11 +26,11 @@ const FAQS = [
     a: "Orders can often be changed or cancelled shortly after they're placed. Send us your order number as soon as possible and we'll do our best to help.",
   },
   {
-    q: "What is your returns policy?",
-    a: "Items can be returned within 28 days of delivery, unworn and in their original packaging. Some exclusions apply, such as personalised items and opened beauty products.",
+    q: "How do I return a Debenhams order?",
+    a: "Items can be returned within 28 days of delivery, unworn and in their original packaging. Some exclusions apply, such as personalised items and opened beauty products. Contact us with your order number and we'll guide you through the return.",
   },
   {
-    q: "How long do refunds take?",
+    q: "How long do Debenhams refunds take?",
     a: "Once your return is received, refunds are typically processed within 5–7 working days to your original payment method.",
   },
   {
