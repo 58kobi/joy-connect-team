@@ -11,6 +11,7 @@ import { timeAgo } from "@/lib/claim-status";
 export const Route = createFileRoute("/_authenticated/chats")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Live chats — Customer Care" },
       { name: "description", content: "Reply to customer chats in real time." },
       { property: "og:title", content: "Live chats — Customer Care" },

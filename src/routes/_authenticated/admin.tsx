@@ -53,6 +53,7 @@ function formatDateTime(iso: string) {
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Claims dashboard — Customer Care" },
       { name: "description", content: "Manage incoming customer claims in real time." },
       { property: "og:title", content: "Claims dashboard — Customer Care" },
