@@ -58,7 +58,7 @@ const CONTACT_ROWS = [
   {
     icon: Phone,
     title: "Call Us",
-    text: "Mon – Fri, 9am – 6pm.",
+    text: "+44 7454 742785 (Mon – Fri, 9am – 6pm).",
   },
 ];
 
@@ -76,6 +76,8 @@ export function SupportFaq({
     else if (title === "Email Us") setEmailOpen(true);
     else if (title === "WhatsApp")
       window.open("https://wa.me/447454742785", "_blank", "noopener,noreferrer");
+    else if (title === "Call Us")
+      window.location.href = "tel:+447454742785";
     else onContact("General Enquiries");
   };
 
