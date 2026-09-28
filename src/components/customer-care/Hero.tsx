@@ -24,8 +24,8 @@ export function Hero({ onGetHelp }: { onGetHelp: (query: string) => void }) {
           </h1>
 
           <p className="mt-6 max-w-md text-base leading-relaxed text-primary-foreground/85 sm:text-lg">
-            We&rsquo;re here to help with your orders, delivery, returns,
-            refunds, complaints and more.
+            Your Debenhams help centre — we&rsquo;re here to help with order
+            tracking, delivery, returns, refunds, complaints and more.
           </p>
 
           <form

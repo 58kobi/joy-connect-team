@@ -14,28 +14,28 @@ import {
 
 const FAQS = [
   {
-    q: "How can I contact Debenhams customer services?",
-    a: "You can reach our independent customer care team by live chat, WhatsApp on +44 7454 742785, or email at info@debenhamscare.uk, Monday to Friday, 9am – 6pm. Choose any contact option on this page and we'll be happy to help.",
+    q: "How can I contact Debenhams customer service?",
+    a: "You can reach our independent Debenhams customer care team by live chat, WhatsApp on +44 7454 742785, or email at info@debenhamscare.uk, Monday to Friday, 9am – 6pm. Choose any contact option on this page and our support team will be happy to help.",
   },
   {
     q: "How do I track my Debenhams order?",
-    a: "Enter your order number in the help field at the top of the page or contact our team, and we'll help check the latest status for you.",
+    a: "For Debenhams order tracking, enter your order number in the help field at the top of the page or contact our team, and we'll help check the latest delivery status for you — including delayed or missing orders.",
   },
   {
     q: "Can I change or cancel my order?",
-    a: "Orders can often be changed or cancelled shortly after they're placed. Send us your order number as soon as possible and we'll do our best to help.",
+    a: "Orders can often be changed or cancelled shortly after they're placed. Send us your order number as soon as possible and our order support team will do their best to help.",
   },
   {
     q: "How do I return a Debenhams order?",
-    a: "Items can be returned within 28 days of delivery, unworn and in their original packaging. Some exclusions apply, such as personalised items and opened beauty products. Contact us with your order number and we'll guide you through the return.",
+    a: "Items can be returned within 28 days of delivery, unworn and in their original packaging. Some exclusions apply, such as personalised items and opened beauty products. Contact us with your order number and we'll guide you through your return request.",
   },
   {
     q: "How long do Debenhams refunds take?",
-    a: "Once your return is received, refunds are typically processed within 5–7 working days to your original payment method.",
+    a: "Once your return is received, refunds are typically processed within 5–7 working days to your original payment method. If you have a refund enquiry or want to check your refund status, get in touch and we'll look into it.",
   },
   {
     q: "How can I make a complaint?",
-    a: "Choose the Complaints category and tell us what happened. Our team will review your complaint and respond with the next steps.",
+    a: "Choose the Complaints category and tell us what happened. Our UK customer care team will review your complaint and respond with the next steps.",
   },
 ];
 
