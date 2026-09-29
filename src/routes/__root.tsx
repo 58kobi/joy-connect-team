@@ -81,8 +81,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Debenhams Customer Care" },
       { name: "description", content: "Customer care for orders, delivery, returns, refunds and enquiries." },
       { name: "author", content: "Debenhams Customer Care" },
-      { property: "og:title", content: "Debenhams Customer Care" },
-      { property: "og:description", content: "Customer care for orders, delivery, returns, refunds and enquiries." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "google-site-verification", content: "UZT6pseqkEqJBbFJY6bkHee8lN78LzSefcvxik3Rn4c" },
