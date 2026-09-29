@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CustomerCarePage } from "@/components/customer-care/CustomerCarePage";
 
 const TITLE =
-  "Debenhams Customer Care UK — Customer Service, Help Centre & Contact";
+  "Debenhams Care — Debenhams Customer Care UK, Customer Service & Contact";
 const DESCRIPTION =
   "Independent Debenhams customer care and support team. Get help with orders, order tracking, delivery, returns, refunds and complaints. Contact us by WhatsApp, email or live chat — Debenhams customer service for the UK.";
 const URL = "https://debenhamscare.uk/";
