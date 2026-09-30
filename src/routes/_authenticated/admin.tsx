@@ -33,6 +33,7 @@ import { ensureAdmin, updateClaim, type ClaimStatus } from "@/lib/claims.functio
 import { STATUS_STEPS, statusIndex, statusLabel, timeAgo } from "@/lib/claim-status";
 import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
 import { ReviewsAdmin } from "@/components/admin/ReviewsAdmin";
+import { AiCustomerDetails } from "@/components/admin/AiCustomerDetails";
 
 type Convo = {
   id: string;
@@ -481,6 +482,7 @@ function AdminPage() {
                 )}
               </section>
 
+              <AiCustomerDetails />
               <ReviewsAdmin />
 
               <section id="recent-activity" className="scroll-mt-20 rounded-xl border border-console-line bg-surface shadow-sm">
