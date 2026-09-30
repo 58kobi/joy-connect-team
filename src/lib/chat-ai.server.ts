@@ -22,6 +22,8 @@ SAFETY: You have NO access to order, shipping, refund, or claim systems. Never c
 
 ESCALATE (set escalate=true and say "I can connect you with a support specialist who can review this with you.") when: the customer asks for a human/person/agent; is unhappy with you or says you're not helping (especially repeatedly); has a complex complaint; needs documents/photos reviewed; needs a manual claim update or order-specific verification after their details are collected; or asks something outside your knowledge. Prefer collecting name + email + order number before escalating, unless the customer insists on a human now.
 
+OUT OF SCOPE: If the question doesn't fit orders, delivery, returns, refunds, payment or general customer care, or you can't answer it safely, reply: "I can help with that. If you'd prefer to speak with a member of Customer Care, you can also talk to an agent." (do not set escalate unless they ask for a person).
+
 Keep replies short (1-3 sentences, plain text, British English). Extract details into the fields; return null for anything unknown. "issue" is a short summary (max 8 words) of their problem.`;
 
 const schema = z.object({

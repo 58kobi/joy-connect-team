@@ -12,14 +12,16 @@ import {
 } from "@/lib/chat.functions";
 
 const KEY = "cc-chat-token";
+const GREETED = "cc-chat-greeted";
+const GREETING = "Hello, I\u2019m the Debenhams Customer Care AI Assistant. How may I help you today?";
 const QUICK = [
-  "Track an Order",
-  "Delivery Problem",
-  "Return an Item",
-  "Refund Problem",
-  "Make a Complaint",
-  "Existing Claim",
-  "Talk to a Person",
+  "Order enquiry",
+  "Delivery",
+  "Returns",
+  "Refund",
+  "Payment",
+  "General customer care",
+  "Talk to an agent",
 ];
 
 type State = { mode: "ai" | "human"; status: ChatStatus; messages: PublicMessage[]; staffOnline: boolean };
@@ -47,6 +49,14 @@ export function CareChat() {
   const [error, setError] = useState<string | null>(null);
   const [unread, setUnread] = useState(0);
   const [staffOnline, setStaffOnline] = useState(false);
+  const [greet, setGreet] = useState<"typing" | "shown" | null>(null);
+  const [teaser, setTeaser] = useState(false);
+  useEffect(() => {
+    if (window.localStorage.getItem(GREETED)) { setGreet("shown"); return; }
+    const t1 = window.setTimeout(() => { setTeaser(true); setGreet("typing"); }, 1200);
+    const t2 = window.setTimeout(() => { setGreet("shown"); window.localStorage.setItem(GREETED, "1"); }, 2600);
+    return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
+  }, []);
   const seenCount = useRef(0);
   const previousVisibleCount = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
@@ -159,7 +169,7 @@ export function CareChat() {
   }
 
   async function quick(label: string) {
-    if (label === "Talk to a Person") {
+    if (label === "Talk to an agent") {
       if (!token) return begin("human");
       setBusy(true);
       try {
@@ -186,10 +196,25 @@ export function CareChat() {
 
   return (
     <>
+      {!open && teaser && !token && (
+        <div role="status" aria-live="polite" className="animate-soft-enter fixed bottom-24 right-5 z-50 w-[min(20rem,calc(100vw-2.5rem))] rounded-2xl border border-border bg-card p-4 text-sm shadow-lg">
+          <button onClick={() => setTeaser(false)} aria-label="Dismiss greeting" className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:text-foreground">
+            <X className="h-3.5 w-3.5" />
+          </button>
+          <p className="text-[11px] font-medium text-muted-foreground">AI Assistant</p>
+          {greet === "typing" ? (
+            <div className="mt-2"><Typing label="AI Assistant is responding…" /></div>
+          ) : (
+            <button onClick={() => { setTeaser(false); setOpen(true); }} className="mt-1 pr-4 text-left leading-snug">
+              {GREETING}
+            </button>
+          )}
+        </div>
+      )}
       {!open && (
         <button
-          onClick={() => setOpen(true)}
-          aria-label="Open Care Assistant chat"
+          onClick={() => { setTeaser(false); setOpen(true); }}
+          aria-label="Open Debenhams Customer Care AI Assistant chat"
           className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105"
         >
           <MessageCircle className="h-6 w-6" />
@@ -204,16 +229,16 @@ export function CareChat() {
       {open && (
         <div
           role="dialog"
-          aria-label="Care Assistant"
+          aria-label="Debenhams Customer Care AI Assistant"
           className="animate-soft-enter fixed inset-0 z-50 flex flex-col bg-background"
         >
           <header className="flex items-center gap-3 bg-primary px-4 py-3 text-primary-foreground shadow-md sm:px-6">
             <Avatar human={isHuman} inverted />
             <div className="min-w-0 flex-1">
-              <p className="font-serif text-base leading-tight">Care Assistant</p>
+              <p className="font-serif text-base leading-tight">Debenhams Customer Care</p>
                <p className="flex items-center gap-1.5 text-xs opacity-80">
                  {isHuman && isStaffOnline && <span className="h-2 w-2 rounded-full bg-trustpilot" aria-hidden="true" />}
-                 {isHuman ? (isStaffOnline ? "Staff online" : "Waiting for a support specialist") : "Automated assistant · replies instantly"}
+                 {isHuman ? (isStaffOnline ? "Staff online" : "Waiting for a support specialist") : "AI Assistant"}
                </p>
             </div>
             {state && (
@@ -229,8 +254,14 @@ export function CareChat() {
           {!state ? (
             <div className="flex flex-1 flex-col overflow-y-auto px-5 py-6 sm:px-6">
               <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col">
-              <h2 className="font-serif text-2xl sm:text-3xl">How can we help today?</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Choose how you&rsquo;d like to continue:</p>
+              <div aria-live="polite" className="rounded-2xl bg-cream px-5 py-4">
+                {greet === "shown" ? (
+                  <p className="font-serif text-xl leading-snug sm:text-2xl">{GREETING}</p>
+                ) : (
+                  <Typing label="AI Assistant is responding…" />
+                )}
+              </div>
+              <p className="mt-4 text-sm text-muted-foreground">Pick a topic, type your question below, or choose how you&rsquo;d like to continue:</p>
               <div className="mt-5 space-y-3">
                 <ChoiceButton icon={<Bot className="h-5 w-5" />} label="Get help with Care Assistant" hint="Instant answers to common questions" onClick={() => begin("ai")} disabled={busy} />
                  <ChoiceButton
@@ -245,6 +276,10 @@ export function CareChat() {
               <p className="mt-3 text-xs text-muted-foreground">You can switch to a support specialist at any time.</p>
               <p className="mt-6 text-xs font-medium uppercase tracking-wider text-muted-foreground">Or start with</p>
               <QuickActions onPick={quick} disabled={busy} />
+              <form onSubmit={(e) => { e.preventDefault(); const v = input.trim(); if (v) begin("ai", v); }} className="mt-5 flex items-end gap-2">
+                <input value={input} onChange={(e) => setInput(e.target.value)} maxLength={2000} placeholder="Type your question…" aria-label="Type your question" className="min-h-[44px] flex-1 rounded-xl border border-border bg-card px-3 text-[15px] outline-none focus:border-foreground/40" />
+                <button type="submit" disabled={busy || !input.trim()} aria-label="Send question" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"><Send className="h-4 w-4" /></button>
+              </form>
               {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
               <p className="mt-auto pt-6 text-[11px] leading-relaxed text-muted-foreground">
                 Independent customer support service
@@ -260,14 +295,14 @@ export function CareChat() {
                 ))}
                 {customerCount === 0 && !pending && <QuickActions onPick={quick} disabled={busy} />}
                 {pending && <Bubble m={{ id: "p", sender: "customer", body: pending, created_at: new Date().toISOString() }} faded />}
-                {busy && pending && !isHuman && <Typing label="Care Assistant is typing…" />}
+                {busy && pending && !isHuman && <Typing label="AI Assistant is responding…" />}
                 <div ref={endRef} />
                 </div>
               </div>
               {error && <p className="px-4 pb-1 text-xs text-destructive">{error}</p>}
               {!isHuman && customerCount > 0 && (
-                <button onClick={() => quick("Talk to a Person")} disabled={busy} className="mx-4 mb-2 self-start text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
-                  Talk to a support specialist instead
+                <button onClick={() => quick("Talk to an agent")} disabled={busy} className="mx-4 mb-2 inline-flex items-center gap-1.5 self-start rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium hover:border-foreground/40 disabled:opacity-50">
+                  <Headset className="h-3.5 w-3.5" /> Talk to an agent
                 </button>
               )}
               <form
@@ -329,7 +364,7 @@ function Bubble({ m, faded }: { m: PublicMessage; faded?: boolean | undefined })
     <div className="flex items-end gap-2">
       <Avatar human={human} />
       <div className="max-w-[80%]">
-        <p className="mb-0.5 text-[11px] font-medium text-muted-foreground">{human ? "Support specialist" : "Care Assistant"}</p>
+        <p className="mb-0.5 text-[11px] font-medium text-muted-foreground">{human ? "Support specialist" : "AI Assistant"}</p>
         <div className={`whitespace-pre-wrap rounded-2xl rounded-bl-sm px-3.5 py-2 text-[15px] ${human ? "border border-coffee/30 bg-card" : "bg-cream"}`}>{m.body}</div>
         <p className="mt-0.5 text-[10px] text-muted-foreground">{time(m.created_at)}</p>
       </div>

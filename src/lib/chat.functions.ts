@@ -8,7 +8,7 @@ export type ChatStatus = "ai" | "waiting" | "active" | "handled";
 export type PublicMessage = { id: string; sender: ChatSender; body: string; created_at: string };
 
 const GREETING =
-  "Hi! I'm Care Assistant, an automated support assistant. I can help with common questions or connect you with a support specialist. What can I help you with today?";
+  "Hello, I'm the Debenhams Customer Care AI Assistant. How may I help you today?";
 const CONNECTED = "You're now connected to customer support. A support specialist will reply here shortly.";
 const HANDOFF = "I've passed your conversation to a support specialist — they can see everything so far and will reply here shortly.";
 
