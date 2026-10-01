@@ -52,8 +52,16 @@ type Row = {
   sharedAt: string | null;
 };
 
-const fmt = (iso: string, tz?: string) =>
-  new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: tz, timeZoneName: "short" });
+const fmt = (iso: string, tz?: string) => {
+  try {
+    return new Date(iso).toLocaleString("en-GB", {
+      day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+      timeZone: tz, timeZoneName: "short",
+    });
+  } catch {
+    return new Date(iso).toLocaleString("en-GB");
+  }
+};
 
 export function AiCustomerDetails() {
   const [rows, setRows] = useState<Row[] | null>(null);
