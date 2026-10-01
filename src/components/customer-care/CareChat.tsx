@@ -53,8 +53,8 @@ export function CareChat() {
   const [teaser, setTeaser] = useState(false);
   useEffect(() => {
     if (window.localStorage.getItem(GREETED)) { setGreet("shown"); return; }
-    const t1 = window.setTimeout(() => { setTeaser(true); setGreet("typing"); }, 1200);
-    const t2 = window.setTimeout(() => { setGreet("shown"); window.localStorage.setItem(GREETED, "1"); }, 2600);
+    const t1 = window.setTimeout(() => { setTeaser(true); setGreet("typing"); }, 500);
+    const t2 = window.setTimeout(() => { setGreet("shown"); window.localStorage.setItem(GREETED, "1"); }, 2000);
     return () => { window.clearTimeout(t1); window.clearTimeout(t2); };
   }, []);
   const seenCount = useRef(0);
