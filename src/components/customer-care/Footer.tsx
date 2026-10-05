@@ -2,12 +2,17 @@ import { Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 import logoAsset from "@/assets/debenhams-logo-light.png.asset.json";
 
 const NAV_LINKS = [
-  { label: "Home", href: "#home" },
-  { label: "FAQs", href: "#faqs" },
-  { label: "Contact Us", href: "#contact" },
+  { label: "Home", href: "/" },
+  { label: "FAQs", href: "/#faqs" },
+  { label: "Returns & Exchanges", href: "/returns" },
+  { label: "About Us", href: "/about" },
+  { label: "Contact Us", href: "/contact" },
 ];
 
-const LEGAL_LINKS = ["Privacy Policy", "Terms & Conditions", "Cookies"];
+const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms & Conditions", href: "/terms" },
+];
 
 const SOCIALS = [
   { icon: Facebook, label: "Facebook" },
@@ -53,13 +58,13 @@ export function Footer() {
           <div>
             <h3 className="text-sm font-medium">Legal</h3>
             <div className="mt-5 grid gap-3 text-sm text-primary-foreground/60">
-              {LEGAL_LINKS.map((label) => (
+              {LEGAL_LINKS.map((link) => (
                 <a
-                  key={label}
-                  href="#"
+                  key={link.href}
+                  href={link.href}
                   className="transition-colors hover:text-primary-foreground"
                 >
-                  {label}
+                  {link.label}
                 </a>
               ))}
             </div>
@@ -79,7 +84,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex items-center justify-between border-t border-primary-foreground/10 pt-7">
+        <p className="mt-10 text-xs leading-relaxed text-primary-foreground/45">
+          Debenhams Customer Care is an independent support service and is not
+          affiliated with, endorsed by or operated by Debenhams.
+        </p>
+        <div className="mt-6 flex items-center justify-between border-t border-primary-foreground/10 pt-7">
           <a
             href="/auth"
             className="text-[11px] text-primary-foreground/25 transition-colors hover:text-primary-foreground/60"
