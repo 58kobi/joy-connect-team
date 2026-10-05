@@ -31,11 +31,6 @@ function NotFoundComponent() {
             Go home
           </Link>
         </div>
-        <nav aria-label="Main sections" className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-          <a href="/returns" className="hover:underline">Returns help</a>
-          <a href="/contact" className="hover:underline">Contact us</a>
-          <a href="/about" className="hover:underline">About us</a>
-        </nav>
       </div>
     </div>
   );
@@ -89,8 +84,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Debenhams Customer Care" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "theme-color", content: "#111111" },
-      { property: "og:site_name", content: "Debenhams Customer Care" },
       { name: "google-site-verification", content: "UZT6pseqkEqJBbFJY6bkHee8lN78LzSefcvxik3Rn4c" },
       { name: "google-site-verification", content: "q5tHQsaWfVdyFXVAVYHK59ZSx-V8JxBumHVgZSClA10" },
     ],

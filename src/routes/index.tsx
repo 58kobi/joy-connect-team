@@ -33,15 +33,6 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "Debenhams Customer Care",
-          url: URL,
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
           "@type": "Organization",
           name: "Debenhams Customer Care",
           description:
